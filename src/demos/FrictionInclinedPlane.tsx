@@ -335,7 +335,7 @@ const FrictionInclinedPlane: React.FC = () => {
               <div className="flex gap-2">
                 {!isRunning ? (
                     <Button onClick={handleStart} className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> 开始演示
+                        <Play className="w-4 h-4 mr-2" /> 自动演示
                     </Button>
                 ) : (
                     <Button onClick={handlePause} variant="secondary" className="w-full">

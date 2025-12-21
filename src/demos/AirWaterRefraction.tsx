@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SVG, Svg, Path, Text } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -17,7 +18,7 @@ const AirWaterRefraction: React.FC = () => {
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
-  
+
   // State
   const [angleDeg, setAngleDeg] = useState(45);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -79,7 +80,7 @@ const AirWaterRefraction: React.FC = () => {
   const updateScene = useCallback((angle: number) => {
     if (!snapRef.current) return;
     const { rays, arcs, angleTexts } = snapRef.current;
-    
+
     const n1 = CONFIG.N1;
     const n2 = CONFIG.N2;
     const cx = CONFIG.CENTER_X;
@@ -89,15 +90,15 @@ const AirWaterRefraction: React.FC = () => {
     const thetai = toRad(angle);
     const sint = Math.min(1, (n1 / n2) * Math.sin(thetai));
     const thetat = Math.asin(sint);
-    
+
     const fr = fresnel(n1, n2, thetai, thetat);
 
     setData({
-        n1, n2,
-        thetaI: angle,
-        thetaT: toDeg(thetat),
-        R: fr.R,
-        T: fr.T
+      n1, n2,
+      thetaI: angle,
+      thetaT: toDeg(thetat),
+      R: fr.R,
+      T: fr.T
     });
 
     // Ray Endpoints
@@ -117,7 +118,7 @@ const AirWaterRefraction: React.FC = () => {
 
     // Arcs
     const r = 60;
-    
+
     const siX = cx, siY = cy - r;
     const eiX = cx - r * Math.sin(thetai), eiY = cy - r * Math.cos(thetai);
     arcs.i.plot(arcPath(r, siX, siY, eiX, eiY, 0));
@@ -150,28 +151,28 @@ const AirWaterRefraction: React.FC = () => {
 
     let nextAngle = stateRef.current.angleDeg - stateRef.current.animationSpeed;
     if (nextAngle <= 0) {
-        nextAngle = 0;
-        stateRef.current.isPlaying = false;
-        setIsPlaying(false);
+      nextAngle = 0;
+      stateRef.current.isPlaying = false;
+      setIsPlaying(false);
     }
 
     stateRef.current.angleDeg = nextAngle;
     setAngleDeg(nextAngle);
     updateScene(nextAngle);
-    
+
     if (stateRef.current.isPlaying) {
-        requestRef.current = requestAnimationFrame(animate);
+      requestRef.current = requestAnimationFrame(animate);
     }
   }, [updateScene]);
 
   useEffect(() => {
     if (isPlaying) {
-        requestRef.current = requestAnimationFrame(animate);
+      requestRef.current = requestAnimationFrame(animate);
     } else {
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }
     return () => {
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, [isPlaying, animate]);
 
@@ -182,13 +183,13 @@ const AirWaterRefraction: React.FC = () => {
 
     // Static Elements
     s.line(
-        CONFIG.CENTER_X - CONFIG.AXIS_LENGTH/2, CONFIG.CENTER_Y,
-        CONFIG.CENTER_X + CONFIG.AXIS_LENGTH/2, CONFIG.CENTER_Y
+      CONFIG.CENTER_X - CONFIG.AXIS_LENGTH / 2, CONFIG.CENTER_Y,
+      CONFIG.CENTER_X + CONFIG.AXIS_LENGTH / 2, CONFIG.CENTER_Y
     ).stroke({ color: "#7f8c8d", width: 2 });
 
     s.line(
-        CONFIG.CENTER_X, CONFIG.CENTER_Y - 200,
-        CONFIG.CENTER_X, CONFIG.CENTER_Y + 200
+      CONFIG.CENTER_X, CONFIG.CENTER_Y - 200,
+      CONFIG.CENTER_X, CONFIG.CENTER_Y + 200
     ).stroke({ color: "#95a5a6", width: 1, dasharray: "5,5" });
 
     s.rect(800, 400).move(0, CONFIG.CENTER_Y).fill("#a3b0eaff").opacity(0.5);
@@ -197,21 +198,21 @@ const AirWaterRefraction: React.FC = () => {
 
     // Dynamic Elements
     const rays = {
-        i: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
-        r: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
-        t: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none")
+      i: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
+      r: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
+      t: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none")
     };
 
     const arcs = {
-        i: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
-        r: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
-        t: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none")
+      i: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
+      r: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
+      t: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none")
     };
 
     const angleTexts = {
-        i: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
-        r: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
-        t: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" })
+      i: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
+      r: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
+      t: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" })
     };
 
     snapRef.current = { s, rays, arcs, angleTexts };
@@ -221,8 +222,8 @@ const AirWaterRefraction: React.FC = () => {
 
   const handlePlay = () => {
     if (stateRef.current.angleDeg <= 0.1) {
-        stateRef.current.angleDeg = 60;
-        setAngleDeg(60);
+      stateRef.current.angleDeg = 60;
+      setAngleDeg(60);
     }
     stateRef.current.isPlaying = true;
     setIsPlaying(true);
@@ -254,36 +255,43 @@ const AirWaterRefraction: React.FC = () => {
           <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
             <svg ref={svgRef} viewBox="0 0 800 500" className="w-full h-auto" />
           </div>
-          
+
           <div className="w-full lg:w-80 space-y-6">
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">实验控制</h3>
               <div className="flex gap-2">
-                {!isPlaying ? (
-                    <Button onClick={handlePlay} className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> 播放动画
-                    </Button>
-                ) : (
-                    <Button onClick={handlePause} variant="secondary" className="w-full">
+                <HoverCard>
+                  <HoverCardTrigger className='w-full'>
+                    {!isPlaying ? (
+                      <Button onClick={handlePlay} className="w-full">
+                        <Play className="w-4 h-4 mr-2" /> 自动演示
+                      </Button>
+                    ) : (
+                      <Button onClick={handlePause} variant="secondary" className="w-full">
                         <Pause className="w-4 h-4 mr-2" /> 暂停
-                    </Button>
-                )}
+                      </Button>
+                    )}
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    点击自动演示，或<p className="font-bold">手动滑动下方的入射角</p>。
+                  </HoverCardContent>
+                </HoverCard>
                 <Button onClick={handleReset} variant="outline" size="icon">
                   <RotateCcw className="w-4 h-4" />
                 </Button>
               </div>
-              
+
               <div className="space-y-1">
                 <Label>入射角: {angleDeg.toFixed(1)}°</Label>
-                <Slider 
-                  value={[angleDeg]} 
+                <Slider
+                  value={[angleDeg]}
                   min={0} max={89} step={0.1}
                   onValueChange={(vals) => {
-                      stateRef.current.isPlaying = false;
-                      setIsPlaying(false);
-                      stateRef.current.angleDeg = vals[0];
-                      setAngleDeg(vals[0]);
-                      updateScene(vals[0]);
+                    stateRef.current.isPlaying = false;
+                    setIsPlaying(false);
+                    stateRef.current.angleDeg = vals[0];
+                    setAngleDeg(vals[0]);
+                    updateScene(vals[0]);
                   }}
                 />
               </div>
