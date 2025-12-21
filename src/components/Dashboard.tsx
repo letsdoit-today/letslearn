@@ -13,10 +13,10 @@ import { useSEO } from '@/hooks/useSEO';
 
 const demos = [
   { 
-    name: '金属球落水', 
+    name: '球体落水', 
     path: '/falling-ball', 
     icon: Beaker,
-    description: '模拟金属球从空中落入水中的过程，观察重力、浮力、阻力等受力情况。'
+    description: '模拟球体从空中落入水中的过程，观察重力、浮力、阻力等受力情况。'
   },
   { 
     name: '斜面摩擦力', 
@@ -47,7 +47,7 @@ const demos = [
 const Dashboard: React.FC = () => {
   useSEO({
     title: '物理模拟实验 - 互动式物理学习平台',
-    description: '专业的物理学习平台，提供金属球落水、斜面摩擦力、光的折射、凸透镜成像、凹透镜成像等交互式物理实验演示。',
+    description: '专业的物理学习平台，提供球体落水、斜面摩擦力、光的折射、凸透镜成像、凹透镜成像等交互式物理实验演示。',
     keywords: '物理实验,力学演示,光学实验,物理学习,互动教学',
     canonical: 'https://learn.letsdoit.today',
     ogImage: 'https://learn.letsdoit.today/og-dashboard.jpg'

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-//@ts-ignore
-import Snap from 'snapsvg-cjs';
+import { SVG, Svg, G, Rect, Circle, Line, Polygon, Text, Matrix } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -21,9 +20,9 @@ interface SimulationState {
 
 const FallingBall: React.FC = () => {
     useSEO({
-      title: '金属球落水实验 - 物理力学演示 | Physics Learn',
-      description: '交互式金属球落水物理实验，模拟重力、浮力、阻力等受力情况，可视化物体在空气和水中的运动规律。',
-      keywords: '金属球落水,浮力实验,重力演示,物理力学,流体阻力',
+      title: '球体落水实验 - 物理力学演示 | Physics Learn',
+      description: '交互式球体落水物理实验，模拟重力、浮力、阻力等受力情况，可视化物体在空气和水中的运动规律。',
+      keywords: '球体落水,浮力实验,重力演示,物理力学,流体阻力',
       canonical: 'https://learn.letsdoit.today/falling-ball',
       ogImage: 'https://learn.letsdoit.today/og-falling-ball.jpg'
     });
@@ -32,11 +31,11 @@ const FallingBall: React.FC = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [time, setTime] = useState(0);
     const [density, setDensity] = useState(1000);
-    const [radius, setRadius] = useState(0.1);
+    const [radius, setRadius] = useState(0.07);
+    const [rhoBall, setRhoBall] = useState(7800); // Ball density (was constant)
     
     // Physics Constants
     const g = 9.8;
-    const rhoBall = 7800; // Steel
     const Cd = 0.47;
     const pixelsPerMeter = 200;
     const width = 800;
@@ -45,15 +44,15 @@ const FallingBall: React.FC = () => {
 
     // Simulation Data Cache
     const simulationData = useRef<SimulationState[]>([]);
-    const maxTime = useRef(10);
+    const maxTime = useRef(2);
     const snapContext = useRef<{
-        s: Snap.Paper;
-        ball: Snap.Element;
-        water: Snap.Element;
-        arrowG: Snap.Element;
-        arrowFb: Snap.Element;
-        arrowFd: Snap.Element;
-        arrowN: Snap.Element;
+        s: Svg;
+        ball: Circle;
+        water: Rect;
+        arrowG: G;
+        arrowFb: G;
+        arrowFd: G;
+        arrowN: G;
     } | null>(null);
 
     // Calculate Simulation Data
@@ -68,7 +67,7 @@ const FallingBall: React.FC = () => {
             const mass = rhoBall * (4/3) * Math.PI * Math.pow(radius, 3);
             
             // Limit max time or stop when settled
-            while (t <= 10) {
+            while (t <= 60) {
                 const G = mass * g;
                 
                 // Buoyancy
@@ -122,38 +121,40 @@ const FallingBall: React.FC = () => {
             simulationData.current = data;
             maxTime.current = data[data.length - 1].t;
         };
-    }, [density, radius]);
+    }, [density, radius, rhoBall]);
 
     // Initialize Snap
     useEffect(() => {
         if (!svgRef.current) return;
         
-        const s = Snap(svgRef.current);
+        const s = SVG(svgRef.current);
         s.clear();
         
         // Draw Water
-        const water = s.rect(0, waterLevel, width, height - waterLevel);
+        const water = s.rect(width, height - waterLevel).move(0, waterLevel);
         water.attr({ fill: "rgba(52, 152, 219, 0.5)", stroke: "none" });
         
-        s.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", strokeWidth: 2 });
+        s.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", "stroke-width": 2 });
         
         // Draw Ball
-        const ball = s.circle(width/2, 50, radius * pixelsPerMeter);
-        ball.attr({ fill: "#95a5a6", stroke: "#7f8c8d", strokeWidth: 2 });
+        const ball = s.circle(radius * pixelsPerMeter * 2).center(width/2, 50);
+        ball.attr({ fill: "#95a5a6", stroke: "#7f8c8d", "stroke-width": 2 });
         
         // Helper for arrows
         const createArrow = (color: string) => {
             const g = s.group();
             const line = s.line(0, 0, 0, 50);
-            const head = s.polygon([-5, 50, 5, 50, 0, 60]);
-            const label = s.text(10, 30, "");
+            const head = s.polygon('-5,50 5,50 0,60');
+            const label = s.text("").move(10, 30);
             
-            line.attr({ stroke: color, strokeWidth: 3 });
+            line.attr({ stroke: color, "stroke-width": 3 });
             head.attr({ fill: color });
-            label.attr({ fill: color, fontSize: "14px", fontWeight: "bold" });
+            label.attr({ fill: color, "font-size": "14px", "font-weight": "bold" });
             
-            g.add(line, head, label);
-            g.attr({ display: 'none' });
+            g.add(line);
+            g.add(head);
+            g.add(label);
+            g.hide();
             return g;
         };
         
@@ -177,7 +178,7 @@ const FallingBall: React.FC = () => {
         
         // Update ball radius visual
         if (snapContext.current) {
-             snapContext.current.ball.attr({ r: radius * pixelsPerMeter });
+             snapContext.current.ball.radius(radius * pixelsPerMeter);
         }
     }, [density, radius, calculateSimulation]);
     
@@ -188,7 +189,7 @@ const FallingBall: React.FC = () => {
         const animate = () => {
             if (isRunning) {
                 setTime(prev => {
-                    const nextTime = prev + 0.016;
+                    const nextTime = prev + 0.01;
                     if (nextTime >= maxTime.current) {
                         setIsRunning(false);
                         return maxTime.current;
@@ -218,35 +219,35 @@ const FallingBall: React.FC = () => {
         if (!frame) return;
         
         // Update Ball
-        ball.attr({ cy: frame.y });
+        ball.cy(frame.y);
         
         // Update Arrows
-        const updateArrow = (arrow: Snap.Element, x: number, y: number, length: number, angle: number, text: string) => {
-            if (Math.abs(length) < 5) {
-                arrow.attr({ display: 'none' });
+        const updateArrow = (arrow: G, x: number, y: number, length: number, angle: number, text: string) => {
+            if (Math.abs(length) < 0.015) {
+                arrow.hide();
                 return;
             }
-            arrow.attr({ display: 'block' });
+            arrow.show();
             
-            const line = arrow.select('line');
-            const head = arrow.select('polygon');
-            const label = arrow.select('text');
+            const line = arrow.findOne('line') as Line;
+            const head = arrow.findOne('polygon') as Polygon;
+            const label = arrow.findOne('text') as Text;
             
             // Limit arrow length visually if too large, but scaling is better
             const displayLen = length;
             
-            line.attr({ y2: displayLen });
-            head.attr({ points: [-5, displayLen, 5, displayLen, 0, displayLen + 10] });
-            label.attr({ text: text, y: displayLen / 2 });
+            line.plot(0, 0, 0, displayLen);
+            head.plot(`-5,${displayLen} 5,${displayLen} 0,${displayLen + 10}`);
+            label.text(text).y(displayLen / 2);
             
-            const transform = `t${x},${y} r${angle},0,0`;
-            arrow.attr({ transform: transform });
+            const matrix = new Matrix().translate(x, y).rotate(angle, x, y);
+            arrow.transform(matrix);
             
             // Text rotation fix
             if (angle === 180) {
-                 label.attr({ transform: "r180", x: -25, y: displayLen/2 });
+                 label.transform({ rotate: 180, origin: 'center' }).x(-25).y(displayLen/2);
             } else {
-                 label.attr({ transform: "r0", x: 10, y: displayLen/2 });
+                 label.transform({ rotate: 0 }).x(10).y(displayLen/2);
             }
         };
         
@@ -270,9 +271,9 @@ const FallingBall: React.FC = () => {
         <div className="container mx-auto p-4 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>金属球落水受力分析</CardTitle>
+                    <CardTitle>球体落水受力分析</CardTitle>
                     <CardDescription>
-                        模拟金属球从空中落入水中的过程，观察重力、浮力、阻力和支持力的变化。
+                        模拟球体从空中落入水中的过程，观察重力、浮力、阻力和支持力的变化。
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col lg:flex-row gap-6">
@@ -311,6 +312,14 @@ const FallingBall: React.FC = () => {
                                         value={[density]} 
                                         min={800} max={1200} step={50}
                                         onValueChange={(vals) => setDensity(vals[0])}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label>球体密度 (ρ): {rhoBall} kg/m³</Label>
+                                    <Slider 
+                                        value={[rhoBall]} 
+                                        min={1000} max={20000} step={100}
+                                        onValueChange={(vals) => setRhoBall(vals[0])}
                                     />
                                 </div>
                                 <div className="space-y-1">

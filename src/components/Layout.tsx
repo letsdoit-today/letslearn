@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const getBreadcrumb = () => {
     switch (path) {
-      case '/falling-ball': return '金属球落水';
+      case '/falling-ball': return '球体落水受力分析';
       case '/friction-inclined-plane': return '斜面摩擦力';
       case '/air-water-refraction': return '光的折射';
       case '/convex-lens': return '凸透镜成像';
@@ -67,7 +67,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       title: '物理',
       icon: Atom,
       items: [
-        { name: '金属球落水', path: '/falling-ball', icon: Beaker },
+        { name: '球体落水受力分析', path: '/falling-ball', icon: Beaker },
         { name: '斜面摩擦力', path: '/friction-inclined-plane', icon: Triangle },
         { name: '光的折射', path: '/air-water-refraction', icon: Waves },
         { name: '凸透镜成像', path: '/convex-lens', icon: Glasses },

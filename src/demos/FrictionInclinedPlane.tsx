@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-// @ts-ignore
-import Snap from 'snapsvg-cjs';
+import { SVG, Svg, G, Path, Text, Matrix } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -51,17 +50,17 @@ const FrictionInclinedPlane: React.FC = () => {
   
   // Snap Elements Ref
   const snapRef = useRef<{
-    s: Snap.Paper;
-    plank: Snap.Element;
-    block: Snap.Element;
-    vecG: Snap.Element;
-    vecN: Snap.Element;
-    vecF: Snap.Element;
-    vecGx: Snap.Element;
-    labelG: Snap.Element;
-    labelN: Snap.Element;
-    labelF: Snap.Element;
-    labelGx: Snap.Element;
+    s: Svg;
+    plank: G;
+    block: G;
+    vecG: Path;
+    vecN: Path;
+    vecF: Path;
+    vecGx: Path;
+    labelG: Text;
+    labelN: Text;
+    labelF: Text;
+    labelGx: Text;
   } | null>(null);
 
   // Constants
@@ -98,10 +97,10 @@ const FrictionInclinedPlane: React.FC = () => {
     const state = stateRef.current;
     
     // 1. Rotate Plank
-    plank.transform(`t${PIVOT_X},${PIVOT_Y} r${state.angle},0,0`);
+    plank.transform(new Matrix().translate(PIVOT_X, PIVOT_Y).rotate(state.angle, PIVOT_X, PIVOT_Y));
 
     // 2. Position Block
-    block.transform(`t${state.blockPos},0`);
+    block.transform({ translateX: state.blockPos, translateY: 0 });
 
     // 3. Draw Vectors
     const scale = 1.4; // Scaled
@@ -119,31 +118,31 @@ const FrictionInclinedPlane: React.FC = () => {
     const gx = gLen * Math.sin(state.angleRad);
     const gy = gLen * Math.cos(state.angleRad);
 
-    vecG.attr({ d: `M${cx},${cy} l${gx},${gy}` });
+    vecG.plot(`M${cx},${cy} l${gx},${gy}`);
 
     const nLen = physics.N * scale;
-    vecN.attr({ d: `M${cx},${cy} l0,${-nLen}` });
+    vecN.plot(`M${cx},${cy} l0,${-nLen}`);
 
     const fLen = physics.f * scale;
-    vecF.attr({ d: `M${cx},${cy + BLOCK_SIZE/2} l${-fLen},0` });
+    vecF.plot(`M${cx},${cy + BLOCK_SIZE/2} l${-fLen},0`);
 
     const gxLen = physics.Gx * scale;
-    vecGx.attr({ d: `M${cx},${cy} l${gxLen},0` });
+    vecGx.plot(`M${cx},${cy} l${gxLen},0`);
 
     // Update Labels
     const labelOffset = 14;
     
     labelG.attr({ x: cx + gx, y: cy + gy + labelOffset });
-    labelG.transform(`r${-state.angle},${cx + gx},${cy + gy + labelOffset}`);
+    labelG.transform({ rotate: -state.angle, origin: [cx + gx, cy + gy + labelOffset] });
 
     labelN.attr({ x: cx, y: cy - nLen - labelOffset });
-    labelN.transform(`r${-state.angle},${cx},${cy - nLen - labelOffset}`);
+    labelN.transform({ rotate: -state.angle, origin: [cx, cy - nLen - labelOffset] });
 
     labelF.attr({ x: cx - fLen - labelOffset, y: cy + BLOCK_SIZE/2 });
-    labelF.transform(`r${-state.angle},${cx - fLen - labelOffset},${cy + BLOCK_SIZE/2}`);
+    labelF.transform({ rotate: -state.angle, origin: [cx - fLen - labelOffset, cy + BLOCK_SIZE/2] });
 
     labelGx.attr({ x: cx + gxLen + labelOffset, y: cy });
-    labelGx.transform(`r${-state.angle},${cx + gxLen + labelOffset},${cy}`);
+    labelGx.transform({ rotate: -state.angle, origin: [cx + gxLen + labelOffset, cy] });
 
   }, []);
 
@@ -195,7 +194,7 @@ const FrictionInclinedPlane: React.FC = () => {
   useEffect(() => {
     if (!svgRef.current) return;
     
-    const s = Snap(svgRef.current);
+    const s = SVG(svgRef.current);
     s.clear();
     
     // Layers
@@ -204,54 +203,57 @@ const FrictionInclinedPlane: React.FC = () => {
     const blockLayer = s.group();
 
     // Static Ground
-    staticLayer.add(s.line(50, PIVOT_Y, 650, PIVOT_Y).attr({
-        stroke: "#7f8c8d", strokeWidth: 4, strokeLinecap: "round"
+    staticLayer.add(s.line(50, PIVOT_Y, 650, PIVOT_Y).stroke({
+        color: "#7f8c8d", width: 4, linecap: "round"
     }));
-    staticLayer.add(s.circle(PIVOT_X, PIVOT_Y, 6).attr({ fill: "#2c3e50" }));
+    staticLayer.add(s.circle(12).center(PIVOT_X, PIVOT_Y).fill("#2c3e50"));
 
     // Plank
-    const plank = s.rect(-PLANK_LENGTH, -7, PLANK_LENGTH, 14, 3.5).attr({
-        fill: "#d35400", stroke: "#a04000", strokeWidth: 1.4
+    const plank = s.rect(PLANK_LENGTH, 14).move(-PLANK_LENGTH, -7).radius(3.5).attr({
+        fill: "#d35400", stroke: "#a04000", "stroke-width": 1.4
     });
     plankLayer.add(plank);
-    plankLayer.transform(`t${PIVOT_X},${PIVOT_Y}`);
+    plankLayer.transform({ translate: [PIVOT_X, PIVOT_Y] });
 
     // Block
-    const block = s.rect(-BLOCK_SIZE/2, -BLOCK_SIZE - 7, BLOCK_SIZE, BLOCK_SIZE).attr({
-        fill: "#95a5a6", stroke: "#7f8c8d", strokeWidth: 1.4
+    const block = s.rect(BLOCK_SIZE, BLOCK_SIZE).move(-BLOCK_SIZE/2, -BLOCK_SIZE - 7).attr({
+        fill: "#95a5a6", stroke: "#7f8c8d", "stroke-width": 1.4
     });
     blockLayer.add(block);
     plankLayer.add(blockLayer);
 
     // Arrows
     const createArrow = (color: string) => {
-        const marker = s.path("M0,0 L0,6 L9,3 z").attr({fill: color}).marker(0,0,9,6,9,3);
-        return s.path("M0,0 L0,0").attr({
-            stroke: color, strokeWidth: 2.8, markerEnd: marker
-        });
+        const marker = s.marker(9, 6, function(add) {
+            add.path("M0,0 L0,6 L9,3 z").fill(color);
+        }).ref(9, 3);
+        
+        return s.path("M0,0 L0,0").stroke({
+            color: color, width: 2.8
+        }).marker('end', marker);
     };
 
     const vecG = createArrow("#e74c3c");
     const vecN = createArrow("#2ecc71");
     const vecF = createArrow("#3498db");
-    const vecGx = createArrow("#9b59b6").attr({ opacity: 0.5 });
+    const vecGx = createArrow("#9b59b6").opacity(0.5);
 
-    blockLayer.add(vecG, vecN, vecF, vecGx);
+    blockLayer.add(vecG).add(vecN).add(vecF).add(vecGx);
 
     // Labels
     const labelSize = "16px";
     const createLabel = (text: string, color: string) => 
-        s.text(0, 0, text).attr({ 
-            fill: color, textAnchor: "middle", dominantBaseline: "middle", 
-            fontSize: labelSize, fontWeight: "bold" 
+        s.text(text).move(0, 0).attr({ 
+            fill: color, "text-anchor": "middle", "dominant-baseline": "middle", 
+            "font-size": labelSize, "font-weight": "bold" 
         });
 
     const labelG = createLabel("G", "#e74c3c");
     const labelN = createLabel("N", "#2ecc71");
     const labelF = createLabel("f", "#3498db");
-    const labelGx = createLabel("Gx", "#9b59b6").attr({ opacity: 0.5 });
+    const labelGx = createLabel("Gx", "#9b59b6").opacity(0.5);
 
-    blockLayer.add(labelG, labelN, labelF, labelGx);
+    blockLayer.add(labelG).add(labelN).add(labelF).add(labelGx);
 
     snapRef.current = {
         s, plank: plankLayer, block: blockLayer,

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-//@ts-ignore
-import Snap from 'snapsvg-cjs';
+import { SVG, Svg, Path, Text } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -50,10 +49,10 @@ const AirWaterRefraction: React.FC = () => {
   });
 
   const snapRef = useRef<{
-    s: Snap.Paper;
-    rays: { i: Snap.Element; r: Snap.Element; t: Snap.Element };
-    arcs: { i: Snap.Element; r: Snap.Element; t: Snap.Element };
-    angleTexts: { i: Snap.Element; r: Snap.Element; t: Snap.Element };
+    s: Svg;
+    rays: { i: Path; r: Path; t: Path };
+    arcs: { i: Path; r: Path; t: Path };
+    angleTexts: { i: Text; r: Text; t: Text };
   } | null>(null);
 
   const requestRef = useRef<number>();
@@ -109,40 +108,40 @@ const AirWaterRefraction: React.FC = () => {
     const tx = cx + L * Math.sin(thetat);
     const ty = cy + L * Math.cos(thetat);
 
-    rays.i.attr({ path: `M${ix0},${iy0} L${cx},${cy}` });
-    rays.r.attr({ path: `M${cx},${cy} L${irx},${iry}` });
-    rays.t.attr({ path: `M${cx},${cy} L${tx},${ty}` });
+    rays.i.plot(`M${ix0},${iy0} L${cx},${cy}`);
+    rays.r.plot(`M${cx},${cy} L${irx},${iry}`);
+    rays.t.plot(`M${cx},${cy} L${tx},${ty}`);
 
-    rays.r.attr({ strokeWidth: 2 + 8 * fr.R, strokeOpacity: 0.6 + 0.4 * fr.R });
-    rays.t.attr({ strokeWidth: 2 + 8 * fr.T, strokeOpacity: 0.6 + 0.4 * fr.T });
+    rays.r.attr({ "stroke-width": 2 + 8 * fr.R, "stroke-opacity": 0.6 + 0.4 * fr.R });
+    rays.t.attr({ "stroke-width": 2 + 8 * fr.T, "stroke-opacity": 0.6 + 0.4 * fr.T });
 
     // Arcs
     const r = 60;
     
     const siX = cx, siY = cy - r;
     const eiX = cx - r * Math.sin(thetai), eiY = cy - r * Math.cos(thetai);
-    arcs.i.attr({ path: arcPath(r, siX, siY, eiX, eiY, 0) });
+    arcs.i.plot(arcPath(r, siX, siY, eiX, eiY, 0));
 
     const srX = cx, srY = cy - r;
     const erX = cx + r * Math.sin(thetai), erY = cy - r * Math.cos(thetai);
-    arcs.r.attr({ path: arcPath(r, srX, srY, erX, erY, 1) });
+    arcs.r.plot(arcPath(r, srX, srY, erX, erY, 1));
 
     const stX = cx, stY = cy + r;
     const etX = cx + r * Math.sin(thetat), etY = cy + r * Math.cos(thetat);
-    arcs.t.attr({ path: arcPath(r, stX, stY, etX, etY, 1) });
+    arcs.t.plot(arcPath(r, stX, stY, etX, etY, 1));
 
     // Text
     const liX = cx - (r + 18) * Math.sin(thetai / 2);
     const liY = cy - (r + 18) * Math.cos(thetai / 2);
-    angleTexts.i.attr({ x: liX, y: liY, text: `θᵢ ${angle.toFixed(1)}°` });
+    angleTexts.i.text(`θᵢ ${angle.toFixed(1)}°`).attr({ x: liX, y: liY });
 
     const lrX = cx + (r + 18) * Math.sin(thetai / 2);
     const lrY = cy - (r + 18) * Math.cos(thetai / 2);
-    angleTexts.r.attr({ x: lrX, y: lrY, text: `θʳ ${angle.toFixed(1)}°` });
+    angleTexts.r.text(`θʳ ${angle.toFixed(1)}°`).attr({ x: lrX, y: lrY });
 
     const ltX = cx + (r + 18) * Math.sin(thetat / 2);
     const ltY = cy + (r + 18) * Math.cos(thetat / 2);
-    angleTexts.t.attr({ x: ltX, y: ltY, text: `θᵗ ${toDeg(thetat).toFixed(1)}°` });
+    angleTexts.t.text(`θᵗ ${toDeg(thetat).toFixed(1)}°`).attr({ x: ltX, y: ltY });
 
   }, []);
 
@@ -178,40 +177,41 @@ const AirWaterRefraction: React.FC = () => {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const s = Snap(svgRef.current);
+    const s = SVG(svgRef.current);
     s.clear();
 
     // Static Elements
     s.line(
         CONFIG.CENTER_X - CONFIG.AXIS_LENGTH/2, CONFIG.CENTER_Y,
         CONFIG.CENTER_X + CONFIG.AXIS_LENGTH/2, CONFIG.CENTER_Y
-    ).attr({ stroke: "#7f8c8d", strokeWidth: 2 });
+    ).stroke({ color: "#7f8c8d", width: 2 });
 
     s.line(
         CONFIG.CENTER_X, CONFIG.CENTER_Y - 200,
         CONFIG.CENTER_X, CONFIG.CENTER_Y + 200
-    ).attr({ stroke: "#95a5a6", strokeWidth: 1, strokeDasharray: "5,5" });
+    ).stroke({ color: "#95a5a6", width: 1, dasharray: "5,5" });
 
-    s.text(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y - 20, "空气 n₁").attr({ fill: "#7f8c8d", fontSize: "16px" });
-    s.text(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y + 40, "水 n₂").attr({ fill: "#3498db", fontSize: "16px" });
+    s.rect(800, 400).move(0, CONFIG.CENTER_Y).fill("#a3b0eaff").opacity(0.5);
+    s.text("空气 n₁").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y - 40).fill("#7f8c8d").font({ size: "16px" });
+    s.text("水 n₂").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y + 20).fill("#3498dbff").font({ size: "16px" });
 
     // Dynamic Elements
     const rays = {
-        i: s.path("").attr({ stroke: "#e74c3c", strokeWidth: 4, fill: "none" }),
-        r: s.path("").attr({ stroke: "#e74c3c", strokeWidth: 4, fill: "none" }),
-        t: s.path("").attr({ stroke: "#e74c3c", strokeWidth: 4, fill: "none" })
+        i: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
+        r: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
+        t: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none")
     };
 
     const arcs = {
-        i: s.path("").attr({ stroke: "#7f8c8d", strokeWidth: 1, fill: "none" }),
-        r: s.path("").attr({ stroke: "#7f8c8d", strokeWidth: 1, fill: "none" }),
-        t: s.path("").attr({ stroke: "#7f8c8d", strokeWidth: 1, fill: "none" })
+        i: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
+        r: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
+        t: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none")
     };
 
     const angleTexts = {
-        i: s.text(0, 0, "").attr({ fill: "#7f8c8d", fontSize: "12px", textAnchor: "middle" }),
-        r: s.text(0, 0, "").attr({ fill: "#7f8c8d", fontSize: "12px", textAnchor: "middle" }),
-        t: s.text(0, 0, "").attr({ fill: "#7f8c8d", fontSize: "12px", textAnchor: "middle" })
+        i: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
+        r: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
+        t: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" })
     };
 
     snapRef.current = { s, rays, arcs, angleTexts };
@@ -253,7 +253,6 @@ const AirWaterRefraction: React.FC = () => {
         <CardContent className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
             <svg ref={svgRef} viewBox="0 0 800 500" className="w-full h-auto" />
-            <div className="absolute bottom-0 left-0 right-0 h-[250px] bg-blue-500/10 pointer-events-none"></div>
           </div>
           
           <div className="w-full lg:w-80 space-y-6">

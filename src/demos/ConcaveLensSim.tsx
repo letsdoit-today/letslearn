@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-// @ts-ignore
-import Snap from 'snapsvg-cjs';
+import { SVG, Svg, G, Path, Matrix } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -49,15 +48,15 @@ const ConcaveLensSim: React.FC = () => {
   const requestRef = useRef<number>();
 
   const snapRef = useRef<{
-    s: Snap.Paper;
-    objectArrow: Snap.Element;
-    imageArrow: Snap.Element;
+    s: Svg;
+    objectArrow: G;
+    imageArrow: G;
     rays: {
-        incidentParallel: Snap.Element;
-        refractedParallel: Snap.Element;
-        virtualFocus: Snap.Element;
-        virtualCenter: Snap.Element;
-        center: Snap.Element;
+        incidentParallel: Path;
+        refractedParallel: Path;
+        virtualFocus: Path;
+        virtualCenter: Path;
+        center: Path;
     };
   } | null>(null);
 
@@ -87,44 +86,34 @@ const ConcaveLensSim: React.FC = () => {
     const objH = 60;
     const imgX = cx + phys.v;
 
-    objectArrow.transform(`t${objX},${objY}`);
-    imageArrow.transform(`t${imgX},${objY} s${phys.m},${phys.m},0,0`);
+    objectArrow.transform(new Matrix().translate(objX, objY));
+    imageArrow.transform(new Matrix().translate(imgX, objY).scale(phys.m, phys.m, imgX, objY));
 
     const objTopY = objY - objH;
     
     // 1. Incident Parallel
-    rays.incidentParallel.attr({
-        path: `M${objX},${objTopY} L${cx},${objTopY}`
-    });
+    rays.incidentParallel.plot(`M${objX},${objTopY} L${cx},${objTopY}`);
 
     // 2. Refracted Parallel (Diverging from Focus)
     const slope = (objTopY - cy) / CONFIG.f;
     const xEnd = 800;
     const yEnd = cy + slope * (xEnd - (cx - CONFIG.f));
-    rays.refractedParallel.attr({
-        path: `M${cx},${objTopY} L${xEnd},${yEnd}`
-    });
+    rays.refractedParallel.plot(`M${cx},${objTopY} L${xEnd},${yEnd}`);
 
     // 3. Virtual Focus (Backwards to Focus)
     const imgTopY = objY - (objH * phys.m); // Or calculate from ray intersection
     // Ideally, virtual focus ray goes from Lens(cx, objTopY) to Focus(cx-f, cy)
     // But we only draw the dashed part relevant to the image?
     // Let's match original logic: Lens -> Image
-    rays.virtualFocus.attr({
-        path: `M${cx},${objTopY} L${imgX},${imgTopY}`
-    });
+    rays.virtualFocus.plot(`M${cx},${objTopY} L${imgX},${imgTopY}`);
 
     // 4. Center Ray
     const slopeCenter = (cy - objTopY) / (cx - objX);
     const yEndCenter = cy + slopeCenter * (xEnd - cx);
-    rays.center.attr({
-        path: `M${objX},${objTopY} L${cx},${cy} L${xEnd},${yEndCenter}`
-    });
+    rays.center.plot(`M${objX},${objTopY} L${cx},${cy} L${xEnd},${yEndCenter}`);
 
     // 5. Virtual Center (Backwards from Center)
-    rays.virtualCenter.attr({
-        path: `M${cx},${cy} L${imgX},${imgTopY}`
-    });
+    rays.virtualCenter.plot(`M${cx},${cy} L${imgX},${imgTopY}`);
 
   }, []);
 
@@ -158,7 +147,7 @@ const ConcaveLensSim: React.FC = () => {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const s = Snap(svgRef.current);
+    const s = SVG(svgRef.current);
     s.clear();
 
     const cx = CONFIG.centerX;
@@ -168,7 +157,7 @@ const ConcaveLensSim: React.FC = () => {
 
     // Static Elements
     s.line(cx - CONFIG.axisLength/2, cy, cx + CONFIG.axisLength/2, cy)
-        .attr({ stroke: "#7f8c8d", strokeWidth: 2 });
+        .stroke({ color: "#7f8c8d", width: 2 });
 
     s.path(`
         M ${cx - w/2},${cy - h/2}
@@ -177,10 +166,10 @@ const ConcaveLensSim: React.FC = () => {
         L ${cx - w/2},${cy + h/2}
         Q ${cx - 5},${cy} ${cx - w/2},${cy - h/2}
         Z
-    `).attr({ fill: "#ecf0f1", stroke: "#bdc3c7", strokeWidth: 2, fillOpacity: 0.5 });
+    `).fill({ color: "#ecf0f1", opacity: 0.5 }).stroke({ color: "#bdc3c7", width: 2 });
 
     s.line(cx, cy - h/2, cx, cy + h/2)
-        .attr({ stroke: "#3498db", strokeWidth: 1, strokeDasharray: "2,2", opacity: 0.5 });
+        .stroke({ color: "#3498db", width: 1, dasharray: "2,2", opacity: 0.5 });
 
     const points = [
         { x: cx - CONFIG.f, label: "F" },
@@ -191,30 +180,30 @@ const ConcaveLensSim: React.FC = () => {
     ];
 
     points.forEach(p => {
-        s.circle(p.x, cy, 4).attr({ fill: "#2c3e50" });
-        s.text(p.x - 5, cy + (p.offset || 20), p.label).attr({ fill: "#2c3e50", fontSize: "12px" });
+        s.circle(8).center(p.x, cy).fill("#2c3e50");
+        s.text(p.label).move(p.x - 5, cy + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
     });
 
     // Helpers
     const createArrow = (color: string) => {
         const g = s.group();
-        g.line(0, 0, 0, -60).attr({ stroke: color, strokeWidth: 4 });
-        g.polygon(-5, -60, 5, -60, 0, -75).attr({ fill: color });
+        g.line(0, 0, 0, -60).stroke({ color: color, width: 4 });
+        g.polygon("-5,-60 5,-60 0,-75").fill(color);
         return g;
     };
 
     const objectArrow = createArrow("#2980b9");
-    const imageArrow = createArrow("#e74c3c").attr({ opacity: 0.7 });
+    const imageArrow = createArrow("#e74c3c").opacity(0.7);
 
-    const rayAttr = { stroke: "#f39c12", strokeWidth: 2, fill: "none" };
-    const dashedRayAttr = { stroke: "#f39c12", strokeWidth: 1, strokeDasharray: "4,4", fill: "none" };
+    const rayAttr = { color: "#f39c12", width: 2 };
+    const dashedRayAttr = { color: "#f39c12", width: 1, dasharray: "4,4" };
 
     const rays = {
-        incidentParallel: s.path("").attr(rayAttr),
-        refractedParallel: s.path("").attr(rayAttr),
-        virtualFocus: s.path("").attr(dashedRayAttr),
-        virtualCenter: s.path("").attr(dashedRayAttr),
-        center: s.path("").attr(rayAttr)
+        incidentParallel: s.path("").stroke(rayAttr).fill("none"),
+        refractedParallel: s.path("").stroke(rayAttr).fill("none"),
+        virtualFocus: s.path("").stroke(dashedRayAttr).fill("none"),
+        virtualCenter: s.path("").stroke(dashedRayAttr).fill("none"),
+        center: s.path("").stroke(rayAttr).fill("none")
     };
 
     snapRef.current = { s, objectArrow, imageArrow, rays };

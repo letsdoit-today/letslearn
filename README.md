@@ -1,6 +1,6 @@
 # Physics Learn - React Refactor
 
-This project is a React refactor of the physics demos using Shadcn UI and Snap.svg.
+This project is a React refactor of the physics demos using Shadcn UI and svg.js.
 
 ## Setup
 
@@ -29,4 +29,4 @@ This project is a React refactor of the physics demos using Shadcn UI and Snap.s
 -   Vite
 -   Tailwind CSS
 -   Shadcn UI (Radix UI + Tailwind)
--   Snap.svg (via snapsvg-cjs)
+-   SVG.js (@svgdotjs/svg.js)

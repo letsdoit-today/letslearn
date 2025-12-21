@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-//@ts-ignore
-import Snap from 'snapsvg-cjs';
+import { SVG, Svg, G, Path, Matrix } from '@svgdotjs/svg.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -49,14 +48,14 @@ const ConvexLensSim: React.FC = () => {
   const requestRef = useRef<number>();
 
   const snapRef = useRef<{
-    s: Snap.Paper;
-    objectArrow: Snap.Element;
-    imageArrow: Snap.Element;
+    s: Svg;
+    objectArrow: G;
+    imageArrow: G;
     rays: {
-        parallel: Snap.Element;
-        center: Snap.Element;
-        virtualParallel: Snap.Element;
-        virtualCenter: Snap.Element;
+        parallel: Path;
+        center: Path;
+        virtualParallel: Path;
+        virtualCenter: Path;
     };
   } | null>(null);
 
@@ -107,63 +106,47 @@ const ConvexLensSim: React.FC = () => {
     const imgX = CONFIG.centerX + phys.v;
 
     // Draw Object
-    objectArrow.transform(`t${objX},${objY}`);
+    objectArrow.transform(new Matrix().translate(objX, objY));
 
     const objTopY = objY - objH;
 
     // Handle Image & Rays
     if (Math.abs(phys.v) === Infinity || Math.abs(phys.v) > 2000) {
-        imageArrow.attr({ opacity: 0 });
-        rays.virtualParallel.attr({ path: "" });
-        rays.virtualCenter.attr({ path: "" });
+        imageArrow.opacity(0);
+        rays.virtualParallel.plot("");
+        rays.virtualCenter.plot("");
 
         const lensHitY = objTopY;
-        rays.parallel.attr({ 
-            path: `M${objX},${objTopY} L${CONFIG.centerX},${lensHitY} L${CONFIG.centerX + CONFIG.f},${CONFIG.centerY} l${CONFIG.f},${(CONFIG.centerY - lensHitY)}` 
-        });
-        rays.center.attr({ 
-            path: `M${objX},${objTopY} L${CONFIG.centerX + 500},${CONFIG.centerY + (500 / u) * objH}` 
-        });
+        rays.parallel.plot(`M${objX},${objTopY} L${CONFIG.centerX},${lensHitY} L${CONFIG.centerX + CONFIG.f},${CONFIG.centerY} l${CONFIG.f},${(CONFIG.centerY - lensHitY)}`);
+        rays.center.plot(`M${objX},${objTopY} L${CONFIG.centerX + 500},${CONFIG.centerY + (500 / u) * objH}`);
         return;
     }
 
-    imageArrow.attr({ opacity: 1 });
-    imageArrow.transform(`t${imgX},${objY} s${Math.abs(phys.m)},${phys.m},0,0`);
+    imageArrow.opacity(1);
+    imageArrow.transform(new Matrix().translate(imgX, objY).scale(Math.abs(phys.m), phys.m, imgX, objY));
 
     const imgTopY = objY - (objH * phys.m);
 
     // Solid Rays
-    rays.parallel.attr({
-        path: `M${objX},${objTopY} L${CONFIG.centerX},${objTopY} L${imgX},${imgTopY}`
-    });
-    rays.center.attr({
-        path: `M${objX},${objTopY} L${CONFIG.centerX},${CONFIG.centerY} L${imgX},${imgTopY}`
-    });
+    rays.parallel.plot(`M${objX},${objTopY} L${CONFIG.centerX},${objTopY} L${imgX},${imgTopY}`);
+    rays.center.plot(`M${objX},${objTopY} L${CONFIG.centerX},${CONFIG.centerY} L${imgX},${imgTopY}`);
 
     // Virtual Rays
     if (u < CONFIG.f) {
         const xEnd = 800;
         const slope1 = (CONFIG.centerY - objTopY) / CONFIG.f;
         const yEnd1 = objTopY + slope1 * (xEnd - CONFIG.centerX);
-        rays.parallel.attr({
-            path: `M${objX},${objTopY} L${CONFIG.centerX},${objTopY} L${xEnd},${yEnd1}`
-        });
+        rays.parallel.plot(`M${objX},${objTopY} L${CONFIG.centerX},${objTopY} L${xEnd},${yEnd1}`);
 
         const slope2 = (CONFIG.centerY - objTopY) / u;
         const yEnd2 = CONFIG.centerY + slope2 * (xEnd - CONFIG.centerX);
-        rays.center.attr({
-            path: `M${objX},${objTopY} L${xEnd},${yEnd2}`
-        });
+        rays.center.plot(`M${objX},${objTopY} L${xEnd},${yEnd2}`);
 
-        rays.virtualParallel.attr({
-            path: `M${CONFIG.centerX},${objTopY} L${imgX},${imgTopY}`
-        });
-        rays.virtualCenter.attr({
-            path: `M${CONFIG.centerX},${CONFIG.centerY} L${imgX},${imgTopY}`
-        });
+        rays.virtualParallel.plot(`M${CONFIG.centerX},${objTopY} L${imgX},${imgTopY}`);
+        rays.virtualCenter.plot(`M${CONFIG.centerX},${CONFIG.centerY} L${imgX},${imgTopY}`);
     } else {
-        rays.virtualParallel.attr({ path: "" });
-        rays.virtualCenter.attr({ path: "" });
+        rays.virtualParallel.plot("");
+        rays.virtualCenter.plot("");
     }
   }, []);
 
@@ -201,20 +184,20 @@ const ConvexLensSim: React.FC = () => {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const s = Snap(svgRef.current);
+    const s = SVG(svgRef.current);
     s.clear();
 
     // Static Elements
     s.line(
         CONFIG.centerX - CONFIG.axisLength / 2, CONFIG.centerY,
         CONFIG.centerX + CONFIG.axisLength / 2, CONFIG.centerY
-    ).attr({ stroke: "#7f8c8d", strokeWidth: 2 });
+    ).stroke({ color: "#7f8c8d", width: 2 });
 
-    s.ellipse(CONFIG.centerX, CONFIG.centerY, CONFIG.lensWidth / 2, CONFIG.lensHeight / 2)
-        .attr({ fill: "#ecf0f1", stroke: "#bdc3c7", strokeWidth: 2, fillOpacity: 0.5 });
+    s.ellipse(CONFIG.lensWidth, CONFIG.lensHeight).center(CONFIG.centerX, CONFIG.centerY)
+        .fill({ color: "#ecf0f1", opacity: 0.5 }).stroke({ color: "#bdc3c7", width: 2 });
 
     s.line(CONFIG.centerX, CONFIG.centerY - CONFIG.lensHeight / 2, CONFIG.centerX, CONFIG.centerY + CONFIG.lensHeight / 2)
-        .attr({ stroke: "#3498db", strokeWidth: 1, strokeDasharray: "2,2", opacity: 0.5 });
+        .stroke({ color: "#3498db", width: 1, dasharray: "2,2", opacity: 0.5 });
 
     const points = [
         { x: CONFIG.centerX - CONFIG.f, label: "F" },
@@ -225,29 +208,29 @@ const ConvexLensSim: React.FC = () => {
     ];
 
     points.forEach(p => {
-        s.circle(p.x, CONFIG.centerY, 4).attr({ fill: "#2c3e50" });
-        s.text(p.x - 5, CONFIG.centerY + (p.offset || 20), p.label).attr({ fill: "#2c3e50", fontSize: "12px" });
+        s.circle(8).center(p.x, CONFIG.centerY).fill("#2c3e50");
+        s.text(p.label).move(p.x - 5, CONFIG.centerY + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
     });
 
     // Helpers
     const createArrow = (color: string) => {
         const g = s.group();
-        g.line(0, 0, 0, -60).attr({ stroke: color, strokeWidth: 4 });
-        g.polygon(-5, -60, 5, -60, 0, -75).attr({ fill: color });
+        g.line(0, 0, 0, -60).stroke({ color: color, width: 4 });
+        g.polygon("-5,-60 5,-60 0,-75").fill(color);
         return g;
     };
 
     const objectArrow = createArrow("#2980b9");
     const imageArrow = createArrow("#e74c3c");
 
-    const rayAttr = { stroke: "#f39c12", strokeWidth: 2, fill: "none" };
-    const virtualRayAttr = { stroke: "#f39c12", strokeWidth: 1, strokeDasharray: "4,4", fill: "none" };
+    const rayAttr = { color: "#f39c12", width: 2 };
+    const virtualRayAttr = { color: "#f39c12", width: 1, dasharray: "4,4" };
 
     const rays = {
-        parallel: s.path("").attr(rayAttr),
-        center: s.path("").attr(rayAttr),
-        virtualParallel: s.path("").attr(virtualRayAttr),
-        virtualCenter: s.path("").attr(virtualRayAttr)
+        parallel: s.path("").stroke(rayAttr).fill("none"),
+        center: s.path("").stroke(rayAttr).fill("none"),
+        virtualParallel: s.path("").stroke(virtualRayAttr).fill("none"),
+        virtualCenter: s.path("").stroke(virtualRayAttr).fill("none")
     };
 
     snapRef.current = { s, objectArrow, imageArrow, rays };
