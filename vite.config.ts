@@ -4,6 +4,7 @@ import { defineConfig } from "vite"
 import sitemap from "vite-plugin-sitemap"
 
 export default defineConfig({
+  base: '/', // 設置為根路徑，適用於GitHub Pages
   plugins: [
     react(),
     sitemap({
@@ -22,4 +23,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-label', '@radix-ui/react-slider', '@radix-ui/react-slot'],
+          utils: ['clsx', 'tailwind-merge', 'class-variance-authority']
+        }
+      }
+    }
+  }
 })
