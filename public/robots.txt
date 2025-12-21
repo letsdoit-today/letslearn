@@ -1,0 +1,13 @@
+# Robots.txt for Physics Learn
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://learn.letsdoit.today/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /private/
+
+# Allow search engines to crawl all content
+Crawl-delay: 1

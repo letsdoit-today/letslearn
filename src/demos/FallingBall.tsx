@@ -1,0 +1,375 @@
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+//@ts-ignore
+import Snap from 'snapsvg-cjs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useSEO } from '@/hooks/useSEO';
+
+interface SimulationState {
+    t: number;
+    y: number;
+    v: number;
+    G: number;
+    Fb: number;
+    Fd: number;
+    N: number;
+    Fnet: number;
+}
+
+const FallingBall: React.FC = () => {
+    useSEO({
+      title: '金属球落水实验 - 物理力学演示 | Physics Learn',
+      description: '交互式金属球落水物理实验，模拟重力、浮力、阻力等受力情况，可视化物体在空气和水中的运动规律。',
+      keywords: '金属球落水,浮力实验,重力演示,物理力学,流体阻力',
+      canonical: 'https://learn.letsdoit.today/falling-ball',
+      ogImage: 'https://learn.letsdoit.today/og-falling-ball.jpg'
+    });
+
+    const svgRef = useRef<SVGSVGElement>(null);
+    const [isRunning, setIsRunning] = useState(false);
+    const [time, setTime] = useState(0);
+    const [density, setDensity] = useState(1000);
+    const [radius, setRadius] = useState(0.1);
+    
+    // Physics Constants
+    const g = 9.8;
+    const rhoBall = 7800; // Steel
+    const Cd = 0.47;
+    const pixelsPerMeter = 200;
+    const width = 800;
+    const height = 500;
+    const waterLevel = 200;
+
+    // Simulation Data Cache
+    const simulationData = useRef<SimulationState[]>([]);
+    const maxTime = useRef(10);
+    const snapContext = useRef<{
+        s: Snap.Paper;
+        ball: Snap.Element;
+        water: Snap.Element;
+        arrowG: Snap.Element;
+        arrowFb: Snap.Element;
+        arrowFd: Snap.Element;
+        arrowN: Snap.Element;
+    } | null>(null);
+
+    // Calculate Simulation Data
+    const calculateSimulation = useMemo(() => {
+        return () => {
+            const data: SimulationState[] = [];
+            const dt = 0.01;
+            let t = 0;
+            let y = 50; // Initial Y
+            let v = 0;
+            
+            const mass = rhoBall * (4/3) * Math.PI * Math.pow(radius, 3);
+            
+            // Limit max time or stop when settled
+            while (t <= 10) {
+                const G = mass * g;
+                
+                // Buoyancy
+                let Vsub = 0;
+                const distFromSurface = (y - waterLevel) / pixelsPerMeter;
+                
+                if (distFromSurface > radius) {
+                    Vsub = (4/3) * Math.PI * Math.pow(radius, 3);
+                } else if (distFromSurface < -radius) {
+                    Vsub = 0;
+                } else {
+                    const h = radius + distFromSurface;
+                    Vsub = (Math.PI * Math.pow(h, 2) / 3) * (3 * radius - h);
+                }
+                
+                const Fb = density * g * Vsub;
+                
+                // Drag
+                const immersionRatio = Vsub / ((4/3) * Math.PI * Math.pow(radius, 3));
+                const area = Math.PI * Math.pow(radius, 2);
+                const vDir = v > 0 ? 1 : -1;
+                let Fd = 0.5 * Cd * density * area * Math.pow(v, 2) * immersionRatio * vDir;
+                
+                // Support Force
+                let N = 0;
+                
+                // Collision/Ground
+                if (y + radius * pixelsPerMeter >= height) {
+                    y = height - radius * pixelsPerMeter;
+                    v = 0;
+                    Fd = 0;
+                    N = G - Fb;
+                    if (N < 0) N = 0;
+                }
+                
+                const Fnet = G - Fb - Fd - N;
+                
+                data.push({ t, y, v, G, Fb, Fd, N, Fnet });
+                
+                const a = Fnet / mass;
+                v += a * dt;
+                y += v * dt * pixelsPerMeter;
+                
+                if (y + radius * pixelsPerMeter > height) {
+                    y = height - radius * pixelsPerMeter;
+                    v = 0;
+                }
+                
+                t += dt;
+            }
+            simulationData.current = data;
+            maxTime.current = data[data.length - 1].t;
+        };
+    }, [density, radius]);
+
+    // Initialize Snap
+    useEffect(() => {
+        if (!svgRef.current) return;
+        
+        const s = Snap(svgRef.current);
+        s.clear();
+        
+        // Draw Water
+        const water = s.rect(0, waterLevel, width, height - waterLevel);
+        water.attr({ fill: "rgba(52, 152, 219, 0.5)", stroke: "none" });
+        
+        s.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", strokeWidth: 2 });
+        
+        // Draw Ball
+        const ball = s.circle(width/2, 50, radius * pixelsPerMeter);
+        ball.attr({ fill: "#95a5a6", stroke: "#7f8c8d", strokeWidth: 2 });
+        
+        // Helper for arrows
+        const createArrow = (color: string) => {
+            const g = s.group();
+            const line = s.line(0, 0, 0, 50);
+            const head = s.polygon([-5, 50, 5, 50, 0, 60]);
+            const label = s.text(10, 30, "");
+            
+            line.attr({ stroke: color, strokeWidth: 3 });
+            head.attr({ fill: color });
+            label.attr({ fill: color, fontSize: "14px", fontWeight: "bold" });
+            
+            g.add(line, head, label);
+            g.attr({ display: 'none' });
+            return g;
+        };
+        
+        const arrowG = createArrow("#e74c3c");
+        const arrowFb = createArrow("#3498db");
+        const arrowFd = createArrow("#f1c40f");
+        const arrowN = createArrow("#9b59b6");
+        
+        snapContext.current = { s, ball, water, arrowG, arrowFb, arrowFd, arrowN };
+        
+        calculateSimulation();
+        updateVisuals(0);
+        
+    }, []); // Run once on mount
+    
+    // Re-run simulation when params change
+    useEffect(() => {
+        calculateSimulation();
+        // Update visuals for current time with new params
+        updateVisuals(time);
+        
+        // Update ball radius visual
+        if (snapContext.current) {
+             snapContext.current.ball.attr({ r: radius * pixelsPerMeter });
+        }
+    }, [density, radius, calculateSimulation]);
+    
+    // Animation Loop
+    useEffect(() => {
+        let animationFrameId: number;
+        
+        const animate = () => {
+            if (isRunning) {
+                setTime(prev => {
+                    const nextTime = prev + 0.016;
+                    if (nextTime >= maxTime.current) {
+                        setIsRunning(false);
+                        return maxTime.current;
+                    }
+                    return nextTime;
+                });
+            }
+            animationFrameId = requestAnimationFrame(animate);
+        };
+        
+        animate();
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [isRunning]);
+    
+    // Update Visuals when time changes
+    useEffect(() => {
+        updateVisuals(time);
+    }, [time]);
+    
+    const updateVisuals = (t: number) => {
+        if (!snapContext.current || simulationData.current.length === 0) return;
+        
+        const { ball, arrowG, arrowFb, arrowFd, arrowN } = snapContext.current;
+        
+        // Find frame
+        const frame = simulationData.current.find(f => f.t >= t) || simulationData.current[simulationData.current.length - 1];
+        if (!frame) return;
+        
+        // Update Ball
+        ball.attr({ cy: frame.y });
+        
+        // Update Arrows
+        const updateArrow = (arrow: Snap.Element, x: number, y: number, length: number, angle: number, text: string) => {
+            if (Math.abs(length) < 5) {
+                arrow.attr({ display: 'none' });
+                return;
+            }
+            arrow.attr({ display: 'block' });
+            
+            const line = arrow.select('line');
+            const head = arrow.select('polygon');
+            const label = arrow.select('text');
+            
+            // Limit arrow length visually if too large, but scaling is better
+            const displayLen = length;
+            
+            line.attr({ y2: displayLen });
+            head.attr({ points: [-5, displayLen, 5, displayLen, 0, displayLen + 10] });
+            label.attr({ text: text, y: displayLen / 2 });
+            
+            const transform = `t${x},${y} r${angle},0,0`;
+            arrow.attr({ transform: transform });
+            
+            // Text rotation fix
+            if (angle === 180) {
+                 label.attr({ transform: "r180", x: -25, y: displayLen/2 });
+            } else {
+                 label.attr({ transform: "r0", x: 10, y: displayLen/2 });
+            }
+        };
+        
+        const arrowScale = 2;
+        updateArrow(arrowG, width/2, frame.y, frame.G * arrowScale, 0, "G");
+        updateArrow(arrowFb, width/2, frame.y, frame.Fb * arrowScale, 180, "Fb");
+        updateArrow(arrowN, width/2, frame.y + radius * pixelsPerMeter, frame.N * arrowScale, 180, "N");
+        
+        if (frame.Fd > 0) {
+            updateArrow(arrowFd, width/2, frame.y, Math.abs(frame.Fd) * arrowScale, 180, "Fd");
+        } else {
+            updateArrow(arrowFd, width/2, frame.y, Math.abs(frame.Fd) * arrowScale, 0, "Fd");
+        }
+    };
+    
+    // Current data for display
+    const currentFrame = simulationData.current.find(f => f.t >= time) || { G: 0, Fb: 0, Fd: 0, N: 0, Fnet: 0, v: 0, y: 50 };
+    const currentH = (waterLevel - currentFrame.y) / pixelsPerMeter;
+
+    return (
+        <div className="container mx-auto p-4 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>金属球落水受力分析</CardTitle>
+                    <CardDescription>
+                        模拟金属球从空中落入水中的过程，观察重力、浮力、阻力和支持力的变化。
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col lg:flex-row gap-6">
+                    {/* Canvas Area */}
+                    <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
+                        <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" />
+                        
+                        {/* Legend Overlay */}
+                        <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#e74c3c] block"></span> 重力 G</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#3498db] block"></span> 浮力 Fb</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#f1c40f] block"></span> 阻力 Fd</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#9b59b6] block"></span> 支持力 N</div>
+                        </div>
+                    </div>
+                    
+                    {/* Controls & Data */}
+                    <div className="w-full lg:w-80 space-y-6">
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-lg">实验控制</h3>
+                            <div className="flex gap-2">
+                                <Button onClick={() => setIsRunning(!isRunning)} variant={isRunning ? "secondary" : "default"}>
+                                    {isRunning ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                                    {isRunning ? "暂停" : "开始"}
+                                </Button>
+                                <Button onClick={() => { setIsRunning(false); setTime(0); }} variant="outline">
+                                    <RotateCcw className="w-4 h-4 mr-2" />
+                                    重置
+                                </Button>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <div className="space-y-1">
+                                    <Label>液体密度 (ρ): {density} kg/m³</Label>
+                                    <Slider 
+                                        value={[density]} 
+                                        min={800} max={1200} step={50}
+                                        onValueChange={(vals) => setDensity(vals[0])}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label>球半径 (r): {radius} m</Label>
+                                    <Slider 
+                                        value={[radius]} 
+                                        min={0.05} max={0.2} step={0.01}
+                                        onValueChange={(vals) => setRadius(vals[0])}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label>时间 (t): {time.toFixed(2)} s</Label>
+                                    <Slider 
+                                        value={[time]} 
+                                        min={0} max={maxTime.current} step={0.01}
+                                        onValueChange={(vals) => { setIsRunning(false); setTime(vals[0]); }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-lg">实时数据</h3>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-muted-foreground block">高度 h</span>
+                                    <span className="font-mono">{currentH.toFixed(2)} m</span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block">速度 v</span>
+                                    <span className="font-mono">{currentFrame.v.toFixed(2)} m/s</span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block">重力 G</span>
+                                    <span className="font-mono text-[#e74c3c]">{currentFrame.G.toFixed(2)} N</span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block">浮力 Fb</span>
+                                    <span className="font-mono text-[#3498db]">{currentFrame.Fb.toFixed(2)} N</span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block">阻力 Fd</span>
+                                    <span className="font-mono text-[#f1c40f]">{Math.abs(currentFrame.Fd).toFixed(2)} N</span>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block">支持力 N</span>
+                                    <span className="font-mono text-[#9b59b6]">{currentFrame.N.toFixed(2)} N</span>
+                                </div>
+                                <div className="col-span-2 bg-slate-100 p-2 rounded">
+                                    <span className="text-muted-foreground block">净力 Fnet</span>
+                                    <span className="font-mono font-bold">{currentFrame.Fnet.toFixed(2)} N</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+};
+
+export default FallingBall;
