@@ -5,7 +5,8 @@ import {
   Triangle, 
   Waves, 
   Glasses, 
-  ArrowRight 
+  ArrowRight,
+  EyeIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,13 @@ const demos = [
     path: '/concave-lens', 
     icon: Glasses,
     description: '交互式模拟凹透镜成像规律。'
-  }
+  },
+  { 
+    name: '人眼视觉调节原理模拟', 
+    path: '/eye-sim', 
+    icon: EyeIcon,
+    description: '模拟人眼视觉调节原理，包括距离调节、角度调节、颜色调节等。'
+  },
 ];
 
 const Dashboard: React.FC = () => {
