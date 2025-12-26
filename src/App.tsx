@@ -6,6 +6,7 @@ import FrictionInclinedPlane from './demos/FrictionInclinedPlane';
 import AirWaterRefraction from './demos/AirWaterRefraction';
 import ConvexLensSim from './demos/ConvexLensSim';
 import ConcaveLensSim from './demos/ConcaveLensSim';
+import EyeSim from './demos/EyeSim';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/air-water-refraction" element={<AirWaterRefraction />} />
         <Route path="/convex-lens" element={<ConvexLensSim />} />
         <Route path="/concave-lens" element={<ConcaveLensSim />} />
+        <Route path="/eye-sim" element={<EyeSim />} />
       </Routes>
     </Layout>
   );

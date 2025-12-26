@@ -326,6 +326,34 @@ const AirWaterRefraction: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* 原理说明 */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">原理说明</h3>
+              <div className="space-y-3">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">斯涅尔定律</h4>
+                  <p className="text-sm text-gray-700">
+                    光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵢ。
+                    当光从光疏介质进入光密介质时，折射角小於入射角。
+                  </p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">菲涅尔公式</h4>
+                  <p className="text-sm text-gray-700">
+                    描述光在界面上的反射和透射比例，计算反射率R和透射率T。
+                    当入射角接近90°时，反射率趨近於1，发生全反射现象。
+                  </p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">折射率特性</h4>
+                  <p className="text-sm text-gray-700">
+                    折射率n表示光在真空中的速度与在介质中速度的比值。
+                    空氣折射率約為1.0，水折射率約為1.33，玻璃折射率約為1.5。
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

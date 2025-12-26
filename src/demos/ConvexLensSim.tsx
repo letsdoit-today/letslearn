@@ -337,6 +337,30 @@ const ConvexLensSim: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">原理说明</h3>
+              <div className="space-y-3">
+                <div className="bg-slate-100 p-3 rounded">
+                  <h4 className="text-blue-600 font-bold mb-1 text-sm">1. 凸透镜成像规律</h4>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    凸透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为焦距，u为物距，v为像距。
+                  </p>
+                </div>
+                <div className="bg-slate-100 p-3 rounded">
+                  <h4 className="text-blue-600 font-bold mb-1 text-sm">2. 光线传播路径</h4>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    平行于主光轴的光线通过凸透镜后汇聚在焦点；通过光心的光线方向不变。
+                  </p>
+                </div>
+                <div className="bg-slate-100 p-3 rounded">
+                  <h4 className="text-blue-600 font-bold mb-1 text-sm">3. 成像特性</h4>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    物距大于焦距时形成倒立实像，物距小于焦距时形成正立虚像，物距等于焦距时不成像。
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

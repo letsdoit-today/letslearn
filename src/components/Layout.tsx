@@ -12,7 +12,8 @@ import {
   Atom,
   PanelLeftClose,
   PanelLeftOpen,
-  Mail
+  Mail,
+  EyeIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       case '/air-water-refraction': return '光的折射';
       case '/convex-lens': return '凸透镜成像';
       case '/concave-lens': return '凹透镜成像';
+      case '/eye-sim': return '人眼视觉调节原理模拟';
       default: return '首页';
     }
   };
@@ -72,6 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         { name: '光的折射', path: '/air-water-refraction', icon: Waves },
         { name: '凸透镜成像', path: '/convex-lens', icon: Glasses },
         { name: '凹透镜成像', path: '/concave-lens', icon: Glasses },
+        { name: '人眼视觉调节原理模拟', path: '/eye-sim', icon: EyeIcon }
       ]
     },
     {

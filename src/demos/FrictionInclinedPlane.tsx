@@ -388,6 +388,24 @@ const FrictionInclinedPlane: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">原理说明</h3>
+              <div className="space-y-3 text-sm">
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">斜面受力分析</h4>
+                  <p className="text-gray-700">物体在斜面上受到重力G、支持力N和摩擦力f的作用。重力可分解为平行于斜面的下滑分力Gx和垂直于斜面的分力Gy。</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">摩擦力特性</h4>
+                  <p className="text-gray-700">静摩擦力f随倾角增大而增大，最大静摩擦力f_max = μN。当Gx &gt; f_max时，物体开始滑动，摩擦力变为滑动摩擦力f = μN。</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">临界条件</h4>
+                  <p className="text-gray-700">临界倾角θ_c满足tanθ_c = μ。当θ &lt; θ_c时物体静止，θ &gt; θ_c时物体下滑。摩擦系数μ越大，临界倾角越大。</p>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

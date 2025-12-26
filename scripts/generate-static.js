@@ -12,7 +12,8 @@ const routes = [
   '/friction-inclined-plane',
   '/air-water-refraction',
   '/convex-lens',
-  '/concave-lens'
+  '/concave-lens',
+  '/eye-simulation'
 ];
 
 // 讀取index.html模板

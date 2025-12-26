@@ -310,6 +310,24 @@ const ConcaveLensSim: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">原理说明</h3>
+              <div className="space-y-3 text-sm">
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">凹透镜成像规律</h4>
+                  <p className="text-gray-700">凹透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为负值。凹透镜总是形成正立、缩小的虚像，虚像与物体位于透镜同侧。</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">光线传播路径</h4>
+                  <p className="text-gray-700">平行于主光轴的光线经凹透镜折射后发散，其反向延长线通过虚焦点；通过光心的光线传播方向不变；两条折射光线的反向延长线交点即为虚像位置。</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                  <h4 className="font-semibold text-blue-800 mb-1">成像特性</h4>
+                  <p className="text-gray-700">凹透镜成像具有发散特性，虚像大小随物距变化而改变。物距越大，虚像越小；物距越小，虚像越大，但始终为缩小虚像。</p>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
