@@ -392,22 +392,22 @@ const FallingBall: React.FC = () => {
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                     <h4 className="font-semibold text-blue-800 mb-2">牛顿第二定律</h4>
                                     <p className="text-sm text-gray-700">
-                                        物體運動遵循牛頓第二定律 F = ma，其中F為淨力，m為質量，a為加速度。
-                                        球體下落過程中，淨力Fnet = G - Fb - Fd - N決定其加速度方向。
+                                        物体运动遵循牛顿第二定律 F = ma，其中F为净力，m为质量，a为加速度。
+                                        球体下落过程中，净力Fnet = G - Fb - Fd - N决定其加速度方向。
                                     </p>
                                 </div>
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                     <h4 className="font-semibold text-blue-800 mb-2">阿基米德浮力原理</h4>
                                     <p className="text-sm text-gray-700">
-                                        物體在液體中受到的浮力等於其排開液體的重量，Fb = ρ液體 × g × V排。
-                                        當球體完全浸沒時，V排等於球體體積；部分浸沒時，V排為浸沒部分的體積。
+                                        物体在液体中受到的浮力等于其排开液体的重量，Fb = ρ液体 × g × V排。
+                                        当球体完全浸沒时，V排等于球体体积；部分浸沒时，V排为浸沒部分的体积。
                                     </p>
                                 </div>
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <h4 className="font-semibold text-blue-800 mb-2">流體阻力特性</h4>
+                                    <h4 className="font-semibold text-blue-800 mb-2">流体阻力特性</h4>
                                     <p className="text-sm text-gray-700">
-                                        球體在液體中運動時受到阻力Fd = ½ × Cd × ρ液體 × A × v²，
-                                        其中Cd為阻力係數，A為截面積，v為相對速度。阻力方向與運動方向相反。
+                                        球体在液体中运动时受到阻力Fd = ½ × Cd × ρ液体 × A × v²，
+                                        其中Cd为阻力系数，A为截面面积，v为相对速度。阻力方向与运动方向相反。
                                     </p>
                                 </div>
                             </div>
