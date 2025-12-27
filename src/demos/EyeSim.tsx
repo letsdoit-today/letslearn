@@ -3,14 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { useSEO } from '@/hooks/useSEO';
+import Demos, { siteUrl } from '@/lib/Meta';
+
+const name = '人眼视觉调节原理模拟';
 
 const EyeSim: React.FC = () => {
   useSEO({
-    title: '人眼视觉调节原理模拟 - 光学物理演示 | Physics Learn',
-    description: '交互式人眼视觉调节物理实验，模拟晶状体如何通过改变厚度来调节焦距，可视化人眼成像原理。',
+    title: `${name} - 光学物理演示 | Physics Learn`,
+    description: Demos.find(demo => demo.name === name)?.description || '',
     keywords: '人眼视觉调节,晶状体调节,光学实验,物理光学,视觉成像',
-    canonical: 'https://learn.letsdoit.today/eye-simulation',
-    ogImage: 'https://learn.letsdoit.today/og-eye-simulation.jpg'
+    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
+    ogImage: `${siteUrl}/og-eye-simulation.jpg`
   });
 
   const [objectDistance, setObjectDistance] = useState(400); // 物体距离
@@ -54,9 +57,9 @@ const EyeSim: React.FC = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>人眼视觉调节原理模拟</CardTitle>
+          <CardTitle>{name}</CardTitle>
           <CardDescription>
-            改变物体距离，观察晶状体如何通过改变厚度来调节焦距。
+            {Demos.find(demo => demo.name === name)?.description || ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col lg:flex-row gap-6">

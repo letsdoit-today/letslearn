@@ -1,32 +1,7 @@
-# Physics Learn - React Refactor
+# How to add a new demo
 
-This project is a React refactor of the physics demos using Shadcn UI and svg.js.
+To add a new demo to this project, follow these steps:
 
-## Setup
-
-1.  Navigate to the directory:
-    ```bash
-    cd learn
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-
-## Structure
-
--   `src/demos/FallingBall.tsx`: The refactored "Falling Ball in Water" demo.
--   `src/components/ui`: Shadcn UI components.
--   `src/lib/utils.ts`: Utility functions for styling.
-
-## Technologies
-
--   React 18
--   Vite
--   Tailwind CSS
--   Shadcn UI (Radix UI + Tailwind)
--   SVG.js (@svgdotjs/svg.js)
+1.  Create a new demo file in the `src/demos/` directory.
+2.  Add the demo to the `routes` array in `generate-static.js`.
+3.  Update the `README.md` file with the new demo.

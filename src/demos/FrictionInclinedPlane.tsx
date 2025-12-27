@@ -6,14 +6,17 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useSEO } from '@/hooks/useSEO';
+import Demos, { siteUrl } from '@/lib/Meta';
+
+const name = '斜面摩擦实验';
 
 const FrictionInclinedPlane: React.FC = () => {
   useSEO({
-    title: '斜面摩擦实验 - 力学物理演示 | Physics Learn',
-    description: '交互式斜面摩擦物理实验，模拟物体在斜面上的受力分析，可视化重力、支持力、摩擦力的平衡关系。',
+    title: `${name} - 力学物理演示 | Physics Learn`,
+    description: Demos.find(demo => demo.name === name)?.description || '',
     keywords: '斜面摩擦,力学实验,受力分析,摩擦力,物理力学',
-    canonical: 'https://learn.letsdoit.today/friction-inclined-plane',
-    ogImage: 'https://learn.letsdoit.today/og-friction-inclined-plane.jpg'
+    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
+    ogImage: `${siteUrl}/og-friction-inclined-plane.jpg`
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -314,9 +317,9 @@ const FrictionInclinedPlane: React.FC = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>斜面摩擦力分析</CardTitle>
+          <CardTitle>{name}</CardTitle>
           <CardDescription>
-            演示物体在斜面上的受力情况，观察静摩擦力转变为滑动摩擦力的过程。
+            {Demos.find(demo => demo.name === name)?.description || ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col lg:flex-row gap-6">

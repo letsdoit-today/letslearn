@@ -7,6 +7,9 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useSEO } from '@/hooks/useSEO';
+import Demos, { siteUrl } from '@/lib/Meta';
+
+const name = '球体落入液体实验';
 
 interface SimulationState {
     t: number;
@@ -21,11 +24,11 @@ interface SimulationState {
 
 const FallingBall: React.FC = () => {
     useSEO({
-        title: '球体落入液体实验 - 物理力学演示 | Physics Learn',
-        description: '交互式球体落入液体物理实验，模拟重力、浮力、阻力等受力情况，可视化物体在空气和水中的运动规律。',
+        title: `${name} - 物理力学演示 | Physics Learn`,
+        description: Demos.find(demo => demo.name === name)?.description || '',
         keywords: '球体落入液体,浮力实验,重力演示,物理力学,流体阻力',
-        canonical: 'https://learn.letsdoit.today/falling-ball',
-        ogImage: 'https://learn.letsdoit.today/og-falling-ball.jpg'
+        canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
+        ogImage: `${siteUrl}/og-falling-ball.jpg`
     });
 
     const svgRef = useRef<SVGSVGElement>(null);
@@ -272,12 +275,9 @@ const FallingBall: React.FC = () => {
         <div className="container mx-auto p-4 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>球体落入液体受力分析</CardTitle>
+                    <CardTitle>{name}</CardTitle>
                     <CardDescription>
-                        模拟球体从空中落入液体中的过程，观察重力、浮力、阻力和支持力的变化。
-                        <p className="text-red-500">
-                            调整液体和球体密度，观察当液体密度大于、等于、小于球体密度时，球体下落过程中所受的力如何变化。
-                        </p>
+                        {Demos.find(demo => demo.name === name)?.description || ''}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col lg:flex-row gap-6">

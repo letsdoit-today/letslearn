@@ -7,14 +7,17 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useSEO } from '@/hooks/useSEO';
+import Demos, { siteUrl } from '@/lib/Meta';
+
+const name = '凹透镜成像模拟';
 
 const ConcaveLensSim: React.FC = () => {
   useSEO({
-    title: '凹透镜成像模拟 - 光学物理演示 | Physics Learn',
-    description: '交互式凹透镜成像物理实验，模拟光线通过凹透镜的折射路径，可视化虚像形成和光学成像原理。',
+    title: `${name} - 光学物理演示 | Physics Learn`,
+    description: Demos.find(demo => demo.name === name)?.description || '',
     keywords: '凹透镜成像,光学实验,虚像形成,透镜折射,物理光学',
-    canonical: 'https://learn.letsdoit.today/concave-lens',
-    ogImage: 'https://learn.letsdoit.today/og-concave-lens.jpg'
+    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
+    ogImage: `${siteUrl}/og-concave-lens.jpg`
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -238,9 +241,9 @@ const ConcaveLensSim: React.FC = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>凹透镜成像模拟</CardTitle>
+          <CardTitle>{name}</CardTitle>
           <CardDescription>
-            改变物距，观察虚像的位置和大小变化。
+            {Demos.find(demo => demo.name === name)?.description || ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col lg:flex-row gap-6">

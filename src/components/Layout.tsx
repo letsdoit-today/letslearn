@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   Beaker,
-  Triangle,
-  Waves,
-  Glasses,
   ChevronDown,
   ChevronRight,
   FlaskConical,
@@ -13,7 +10,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Mail,
-  EyeIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +22,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import Demos, { Demo } from '@/lib/Meta';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,15 +35,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['physics']);
 
   const getBreadcrumb = () => {
-    switch (path) {
-      case '/falling-ball': return '球体落入液体受力分析';
-      case '/friction-inclined-plane': return '斜面摩擦力';
-      case '/air-water-refraction': return '光的折射';
-      case '/convex-lens': return '凸透镜成像';
-      case '/concave-lens': return '凹透镜成像';
-      case '/eye-sim': return '人眼视觉调节原理模拟';
-      default: return '首页';
+    const demo = Demos.find(d => d.path === path);
+    if (demo) {
+      return demo.name;
     }
+    return '';
   };
 
   const toggleGroup = (groupId: string) => {
@@ -62,28 +55,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       id: 'math',
       title: '数学',
       icon: Calculator,
-      items: []
+      items: [] as Demo[]
     },
     {
       id: 'physics',
       title: '物理',
       icon: Atom,
-      items: [
-        { name: '球体入液体受力分析', path: '/falling-ball', icon: Beaker },
-        { name: '斜面摩擦力', path: '/friction-inclined-plane', icon: Triangle },
-        { name: '光的折射', path: '/air-water-refraction', icon: Waves },
-        { name: '凸透镜成像', path: '/convex-lens', icon: Glasses },
-        { name: '凹透镜成像', path: '/concave-lens', icon: Glasses },
-        { name: '人眼视觉调节原理模拟', path: '/eye-sim', icon: EyeIcon }
-      ]
+      items: [] as Demo[]
     },
     {
       id: 'chemistry',
       title: '化学',
       icon: FlaskConical,
-      items: []
+      items: [] as Demo[]
     }
   ];
+
+  menuGroups.forEach(group => {
+      group.items = Demos.filter(d => d.category === group.id);
+  });
 
   return (
     <div className="min-h-screen bg-background flex">

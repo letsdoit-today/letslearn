@@ -7,14 +7,17 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useSEO } from '@/hooks/useSEO';
+import Demos, { siteUrl } from '@/lib/Meta';
+
+const name = '空气-水折射实验';
 
 const AirWaterRefraction: React.FC = () => {
   useSEO({
-    title: '空气-水折射实验 - 光学物理演示 | Physics Learn',
-    description: '交互式空气-水折射物理实验，模拟光线在不同介质中的折射现象，可视化斯涅尔定律和菲涅尔公式。',
+    title: `${name} - 光学物理演示 | Physics Learn`,
+    description: Demos.find(demo => demo.name === name)?.description || '',
     keywords: '空气水折射,光学实验,斯涅尔定律,菲涅尔公式,物理光学',
-    canonical: 'https://learn.letsdoit.today/air-water-refraction',
-    ogImage: 'https://learn.letsdoit.today/og-air-water-refraction.jpg'
+    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
+    ogImage: `${siteUrl}/og-air-water-refraction.jpg`
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -246,9 +249,9 @@ const AirWaterRefraction: React.FC = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>空气-水折射/反射演示</CardTitle>
+          <CardTitle>{name}</CardTitle>
           <CardDescription>
-            模拟光线从空气射入水中的折射和反射现象，观察菲涅尔效应。
+            {Demos.find(demo => demo.name === name)?.description || ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col lg:flex-row gap-6">
