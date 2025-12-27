@@ -56,7 +56,7 @@ const Demos: Demo[] = [
 { 
     name: '人眼视觉调节原理模拟', 
     category: 'physics',
-    path: '/eye-sim', 
+    path: '/eye-simulation', 
     icon: EyeIcon,
     description: '交互式人眼视觉调节物理实验，模拟晶状体如何通过改变厚度来调节焦距，可视化人眼成像原理。'
   },

@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="h-14 flex items-center px-6 border-b whitespace-nowrap">
           <Link to="/" className="font-bold text-lg flex items-center gap-2">
             <Beaker className="w-5 h-5 text-primary" />
-            Let's Learn!
+            一块学吧!
           </Link>
         </div>
         
