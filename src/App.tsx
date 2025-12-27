@@ -13,12 +13,12 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/falling-ball" element={<FallingBall />} />
-        <Route path="/friction-inclined-plane" element={<FrictionInclinedPlane />} />
-        <Route path="/air-water-refraction" element={<AirWaterRefraction />} />
-        <Route path="/convex-lens" element={<ConvexLensSim />} />
-        <Route path="/concave-lens" element={<ConcaveLensSim />} />
-        <Route path="/eye-simulation" element={<EyeSim />} />
+        <Route path="/falling-ball/" element={<FallingBall />} />
+        <Route path="/friction-inclined-plane/" element={<FrictionInclinedPlane />} />
+        <Route path="/air-water-refraction/" element={<AirWaterRefraction />} />
+        <Route path="/convex-lens/" element={<ConvexLensSim />} />
+        <Route path="/concave-lens/" element={<ConcaveLensSim />} />
+        <Route path="/eye-simulation/" element={<EyeSim />} />
       </Routes>
     </Layout>
   );
