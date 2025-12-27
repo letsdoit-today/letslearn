@@ -18,7 +18,7 @@ function App() {
         <Route path="/air-water-refraction" element={<AirWaterRefraction />} />
         <Route path="/convex-lens" element={<ConvexLensSim />} />
         <Route path="/concave-lens" element={<ConcaveLensSim />} />
-        <Route path="/eye-sim" element={<EyeSim />} />
+        <Route path="/eye-simulation" element={<EyeSim />} />
       </Routes>
     </Layout>
   );

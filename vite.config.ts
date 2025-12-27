@@ -15,7 +15,7 @@ export default defineConfig({
         '/air-water-refraction',
         '/convex-lens',
         '/concave-lens',
-        '/eye-sim'
+        '/eye-simulation'
       ]
     })
   ],
