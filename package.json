@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:ssg": "tsc && vite build && node scripts/generate-static.js",
+    "build:ssg": "tsc && vite build && node scripts/ssg-generator.js",
+    "build:prerender": "tsc && vite build && node scripts/prerender.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -32,11 +33,11 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
+    "puppeteer": "^24.34.0",
     "tailwindcss": "^3.4.0",
     "terser": "^5.44.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vite-plugin-sitemap": "^0.8.2",
-    "vite-plugin-ssr": "^0.4.142"
+    "vite-plugin-sitemap": "^0.8.2"
   }
 }
