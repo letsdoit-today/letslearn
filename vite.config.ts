@@ -10,13 +10,16 @@ export default defineConfig({
     sitemap({
       hostname: 'https://learn.letsdoit.today',
       dynamicRoutes: [
-        '/falling-ball/index.html',
-        '/friction-inclined-plane/index.html',
-        '/air-water-refraction/index.html',
-        '/convex-lens/index.html',
-        '/concave-lens/index.html',
-        '/eye-simulation/index.html'
-      ]
+        '/falling-ball/.',
+        '/friction-inclined-plane/.',
+        '/air-water-refraction/.',
+        '/convex-lens/.',
+        '/concave-lens/.',
+        '/eye-simulation/.'
+      ],
+      changefreq: 'daily',
+      priority: 0.8,
+      lastmod: new Date()
     })
   ],
   resolve: {
