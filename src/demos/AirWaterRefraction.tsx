@@ -132,7 +132,7 @@ const AirWaterRefraction: React.FC = () => {
 
     const stX = cx, stY = cy + r;
     const etX = cx + r * Math.sin(thetat), etY = cy + r * Math.cos(thetat);
-    arcs.t.plot(arcPath(r, stX, stY, etX, etY, 1));
+    arcs.t.plot(arcPath(r, stX, stY, etX, etY, 0));
 
     // Text
     const liX = cx - (r + 18) * Math.sin(thetai / 2);
@@ -337,7 +337,7 @@ const AirWaterRefraction: React.FC = () => {
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <h4 className="font-semibold text-blue-800 mb-2">斯涅尔定律</h4>
                   <p className="text-sm text-gray-700">
-                    光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵢ。
+                    光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵗ。
                     当光从光疏介质进入光密介质时，折射角小於入射角。
                   </p>
                 </div>
@@ -345,14 +345,14 @@ const AirWaterRefraction: React.FC = () => {
                   <h4 className="font-semibold text-blue-800 mb-2">菲涅尔公式</h4>
                   <p className="text-sm text-gray-700">
                     描述光在界面上的反射和透射比例，计算反射率R和透射率T。
-                    当入射角接近90°时，反射率趨近於1，发生全反射现象。
+                    当入射角接近90°时，反射率趋近于1，发生全反射现象。
                   </p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <h4 className="font-semibold text-blue-800 mb-2">折射率特性</h4>
                   <p className="text-sm text-gray-700">
                     折射率n表示光在真空中的速度与在介质中速度的比值。
-                    空氣折射率約為1.0，水折射率約為1.33，玻璃折射率約為1.5。
+                    空气折射率约为1.0，水折射率约为1.33，玻璃折射率约为1.5。
                   </p>
                 </div>
               </div>
