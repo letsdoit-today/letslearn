@@ -21,7 +21,7 @@ const Demos: Demo[] = [
   { 
     name: '球体落入液体实验', 
     category: 'physics',
-    path: '/falling-ball', 
+    path: '/falling-ball/', 
     icon: Beaker,
     description: '模拟球体从空中落入水中的过程，观察重力、浮力、阻力等受力情况。'
 },
@@ -35,28 +35,28 @@ const Demos: Demo[] = [
 { 
     name: '空气-水折射实验', 
     category: 'physics',
-    path: '/air-water-refraction', 
+    path: '/air-water-refraction/', 
     icon: Waves,
     description: '交互式空气-水折射物理实验，模拟光线在不同介质中的折射现象，可视化斯涅尔定律和菲涅尔公式。'
 },
 { 
     name: '凸透镜成像模拟', 
     category: 'physics',
-    path: '/convex-lens', 
+    path: '/convex-lens/', 
     icon: Glasses,
     description: '交互式模拟凸透镜成像规律。'
 },
 { 
     name: '凹透镜成像模拟', 
     category: 'physics',
-    path: '/concave-lens', 
+    path: '/concave-lens/', 
     icon: Glasses,
     description: '交互式模拟凹透镜成像规律。'
 },
 { 
     name: '人眼视觉调节原理模拟', 
     category: 'physics',
-    path: '/eye-simulation', 
+    path: '/eye-simulation/', 
     icon: EyeIcon,
     description: '交互式人眼视觉调节物理实验，模拟晶状体如何通过改变厚度来调节焦距，可视化人眼成像原理。'
   },
