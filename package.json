@@ -37,7 +37,6 @@
     "tailwindcss": "^3.4.0",
     "terser": "^5.44.1",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vite-plugin-sitemap": "^0.8.2"
+    "vite": "^5.0.8"
   }
 }
