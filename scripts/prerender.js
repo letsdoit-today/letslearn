@@ -35,10 +35,6 @@ const routes = [
   }
 ];
 
-// 讀取HTML模板
-const templatePath = path.join(__dirname, '..', 'dist', 'index.html');
-const template = fs.readFileSync(templatePath, 'utf-8');
-
 async function prerenderPages() {
   console.log('🚀 开始预渲染页面...');
 

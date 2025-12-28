@@ -188,6 +188,8 @@ const ConcaveLensSim: React.FC = () => {
       s.text(p.label).move(p.x - 5, cy + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
     });
 
+    s.text("主光轴").move(cx - CONFIG.axisLength / 2, cy).fill("#2c3e50").font({ size: "12px" });
+
     // Helpers
     const createArrow = (color: string) => {
       const g = s.group();

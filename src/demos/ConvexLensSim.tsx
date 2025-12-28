@@ -216,6 +216,7 @@ const ConvexLensSim: React.FC = () => {
       s.text(p.label).move(p.x - 5, CONFIG.centerY + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
     });
 
+    s.text("主光轴").move(CONFIG.centerX - CONFIG.axisLength / 2, CONFIG.centerY).fill("#2c3e50").font({ size: "12px" });
     // Helpers
     const createArrow = (color: string) => {
       const g = s.group();
