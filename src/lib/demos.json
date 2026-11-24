@@ -54,5 +54,13 @@
     "path": "/lever-balance/",
     "description": "交互式杠杆力矩演示，可视化力臂（支点到力的作用线的垂距）、杠杆平衡条件与省力/费力杠杆的区别。",
     "keywords": ["杠杆力矩", "力臂", "力矩平衡", "杠杆原理", "物理力学"]
+  },
+  {
+    "slug": "pendulum-oscillation",
+    "name": "单摆/简谐振动实验",
+    "category": "physics",
+    "path": "/pendulum-oscillation/",
+    "description": "交互式单摆实验，对比小角度与大角度摆动的周期差异，可视化绳张力、切向回复力与机械能转化，揭示简谐近似 sinθ ≈ θ 的适用范围。",
+    "keywords": ["单摆", "简谐振动", "等时性", "周期公式", "sinθ近似", "物理力学"]
   }
 ]

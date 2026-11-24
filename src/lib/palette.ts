@@ -21,6 +21,7 @@ export const palette = {
   forceBuoyancy: '#0ea5e9', // sky-500 浮力 Fb
   forceDrag: '#f59e0b', // amber-500 阻力 Fd
   forceComponent: '#9333ea', // purple-600 重力分力 Gx
+  forceTension: '#0891b2', // cyan-600 绳张力 T
 
   // 光
   ray: '#dc2626', // red-600 光线（实线光路）

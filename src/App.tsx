@@ -9,6 +9,7 @@ import ConvexLensSim from './demos/ConvexLensSim';
 import ConcaveLensSim from './demos/ConcaveLensSim';
 import EyeSim from './demos/EyeSim';
 import LeverBalance from './demos/LeverBalance';
+import PendulumOscillation from './demos/PendulumOscillation';
 import Demos from './lib/Meta';
 
 const demoComponents: Record<string, ComponentType> = {
@@ -19,6 +20,7 @@ const demoComponents: Record<string, ComponentType> = {
   'concave-lens': ConcaveLensSim,
   'eye-simulation': EyeSim,
   'lever-balance': LeverBalance,
+  'pendulum-oscillation': PendulumOscillation,
 };
 
 function App() {
