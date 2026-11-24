@@ -11,6 +11,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette, rgba } from '@/lib/palette';
 
 const name = '球体落入液体实验';
 
@@ -55,13 +56,13 @@ const FallingBall: React.FC = () => {
     useSVGScene(svgRef, (draw) => {
         // Draw Water
         const water = draw.rect(width, height - waterLevel).move(0, waterLevel);
-        water.attr({ fill: "rgba(52, 152, 219, 0.5)", stroke: "none" });
+        water.attr({ fill: rgba(palette.water, 0.5), stroke: "none" });
 
-        draw.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", "stroke-width": 2 });
+        draw.line(0, waterLevel, width, waterLevel).attr({ stroke: palette.water, "stroke-width": 2 });
 
         // Draw Ball
         const ball = draw.circle(radius * pixelsPerMeter * 2).center(width / 2, 50);
-        ball.attr({ fill: "#95a5a6", stroke: "#7f8c8d", "stroke-width": 2 });
+        ball.attr({ fill: palette.object, stroke: palette.objectStroke, "stroke-width": 2 });
 
         // Helper for arrows
         const createArrow = (color: string) => {
@@ -81,10 +82,10 @@ const FallingBall: React.FC = () => {
             return g;
         };
 
-        const arrowG = createArrow("#e74c3c");
-        const arrowFb = createArrow("#3498db");
-        const arrowFd = createArrow("#f1c40f");
-        const arrowN = createArrow("#9b59b6");
+        const arrowG = createArrow(palette.forceGravity);
+        const arrowFb = createArrow(palette.forceBuoyancy);
+        const arrowFd = createArrow(palette.forceDrag);
+        const arrowN = createArrow(palette.forceNormal);
 
         snapContext.current = { ball, arrowG, arrowFb, arrowFd, arrowN };
     });
@@ -150,10 +151,10 @@ const FallingBall: React.FC = () => {
     const dataItems: DataItem[] = [
         { label: '高度 h', value: `${currentH.toFixed(2)} m` },
         { label: '速度 v', value: `${currentFrame.v.toFixed(2)} m/s` },
-        { label: '重力 G', value: `${currentFrame.G.toFixed(2)} N`, className: 'text-[#e74c3c]' },
-        { label: '浮力 Fb', value: `${currentFrame.Fb.toFixed(2)} N`, className: 'text-[#3498db]' },
-        { label: '阻力 Fd', value: `${Math.abs(currentFrame.Fd).toFixed(2)} N`, className: 'text-[#f1c40f]' },
-        { label: '支持力 N', value: `${currentFrame.N.toFixed(2)} N`, className: 'text-[#9b59b6]' },
+        { label: '重力 G', value: `${currentFrame.G.toFixed(2)} N`, color: palette.forceGravity },
+        { label: '浮力 Fb', value: `${currentFrame.Fb.toFixed(2)} N`, color: palette.forceBuoyancy },
+        { label: '阻力 Fd', value: `${Math.abs(currentFrame.Fd).toFixed(2)} N`, color: palette.forceDrag },
+        { label: '支持力 N', value: `${currentFrame.N.toFixed(2)} N`, color: palette.forceNormal },
         { label: '净力 Fnet', value: `${currentFrame.Fnet.toFixed(2)} N`, highlight: true },
     ];
 
@@ -165,10 +166,10 @@ const FallingBall: React.FC = () => {
             <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height}`}>
                 {/* Legend Overlay */}
                 <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#e74c3c] block"></span> 重力 G</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#3498db] block"></span> 浮力 Fb</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#f1c40f] block"></span> 阻力 Fd</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#9b59b6] block"></span> 支持力 N</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceGravity }}></span> 重力 G</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceBuoyancy }}></span> 浮力 Fb</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceDrag }}></span> 阻力 Fd</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceNormal }}></span> 支持力 N</div>
                 </div>
             </SimulationCanvas>
 

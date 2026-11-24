@@ -11,6 +11,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette } from '@/lib/palette';
 
 const name = '斜面摩擦实验';
 
@@ -195,20 +196,20 @@ const FrictionInclinedPlane: React.FC = () => {
 
     // Static Ground
     staticLayer.add(s.line(50, PIVOT_Y, 650, PIVOT_Y).stroke({
-        color: "#7f8c8d", width: 4, linecap: "round"
+        color: palette.objectStroke, width: 4, linecap: "round"
     }));
-    staticLayer.add(s.circle(12).center(PIVOT_X, PIVOT_Y).fill("#2c3e50"));
+    staticLayer.add(s.circle(12).center(PIVOT_X, PIVOT_Y).fill(palette.objectStroke));
 
     // Plank
     const plank = s.rect(PLANK_LENGTH, 14).move(-PLANK_LENGTH, -7).radius(3.5).attr({
-        fill: "#d35400", stroke: "#a04000", "stroke-width": 1.4
+        fill: palette.plank, stroke: palette.plankStroke, "stroke-width": 1.4
     });
     plankLayer.add(plank);
     plankLayer.transform({ translate: [PIVOT_X, PIVOT_Y] });
 
     // Block
     const block = s.rect(BLOCK_SIZE, BLOCK_SIZE).move(-BLOCK_SIZE/2, -BLOCK_SIZE - 7).attr({
-        fill: "#95a5a6", stroke: "#7f8c8d", "stroke-width": 1.4
+        fill: palette.object, stroke: palette.objectStroke, "stroke-width": 1.4
     });
     blockLayer.add(block);
     plankLayer.add(blockLayer);
@@ -224,10 +225,10 @@ const FrictionInclinedPlane: React.FC = () => {
         }).marker('end', marker);
     };
 
-    const vecG = createArrow("#e74c3c");
-    const vecN = createArrow("#2ecc71");
-    const vecF = createArrow("#3498db");
-    const vecGx = createArrow("#9b59b6").opacity(0.5);
+    const vecG = createArrow(palette.forceGravity);
+    const vecN = createArrow(palette.forceNormal);
+    const vecF = createArrow(palette.forceFriction);
+    const vecGx = createArrow(palette.forceComponent).opacity(0.5);
 
     blockLayer.add(vecG).add(vecN).add(vecF).add(vecGx);
 
@@ -239,10 +240,10 @@ const FrictionInclinedPlane: React.FC = () => {
             "font-size": labelSize, "font-weight": "bold" 
         });
 
-    const labelG = createLabel("G", "#e74c3c");
-    const labelN = createLabel("N", "#2ecc71");
-    const labelF = createLabel("f", "#3498db");
-    const labelGx = createLabel("Gx", "#9b59b6").opacity(0.5);
+    const labelG = createLabel("G", palette.forceGravity);
+    const labelN = createLabel("N", palette.forceNormal);
+    const labelF = createLabel("f", palette.forceFriction);
+    const labelGx = createLabel("Gx", palette.forceComponent).opacity(0.5);
 
     blockLayer.add(labelG).add(labelN).add(labelF).add(labelGx);
 
@@ -305,11 +306,11 @@ const FrictionInclinedPlane: React.FC = () => {
 
   const dataItems: DataItem[] = [
     { label: '倾角 θ', value: `${angle.toFixed(1)}°`, className: 'text-lg' },
-    { label: '重力 G', value: `${physicsData.G.toFixed(1)} N`, className: 'text-[#e74c3c]' },
-    { label: '支持力 N', value: `${physicsData.N.toFixed(1)} N`, className: 'text-[#2ecc71]' },
-    { label: '下滑分力 Gx', value: `${physicsData.Gx.toFixed(1)} N`, className: 'text-[#9b59b6]' },
+    { label: '重力 G', value: `${physicsData.G.toFixed(1)} N`, color: palette.forceGravity },
+    { label: '支持力 N', value: `${physicsData.N.toFixed(1)} N`, color: palette.forceNormal },
+    { label: '下滑分力 Gx', value: `${physicsData.Gx.toFixed(1)} N`, color: palette.forceComponent },
     { label: '最大静摩擦 f_max', value: `${physicsData.f_max.toFixed(1)} N` },
-    { label: '当前摩擦力 f', value: `${physicsData.f.toFixed(1)} N`, className: 'text-[#3498db]', highlight: true },
+    { label: '当前摩擦力 f', value: `${physicsData.f.toFixed(1)} N`, color: palette.forceFriction, highlight: true },
   ];
 
   return (

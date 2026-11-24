@@ -10,6 +10,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette } from '@/lib/palette';
 
 const name = '凸透镜成像模拟';
 
@@ -163,13 +164,13 @@ const ConvexLensSim: React.FC = () => {
     s.line(
       CONFIG.centerX - CONFIG.axisLength / 2, CONFIG.centerY,
       CONFIG.centerX + CONFIG.axisLength / 2, CONFIG.centerY
-    ).stroke({ color: "#7f8c8d", width: 2 });
+    ).stroke({ color: palette.reference, width: 2 });
 
     s.ellipse(CONFIG.lensWidth, CONFIG.lensHeight).center(CONFIG.centerX, CONFIG.centerY)
-      .fill({ color: "#ecf0f1", opacity: 0.5 }).stroke({ color: "#bdc3c7", width: 2 });
+      .fill({ color: palette.lensGlass, opacity: 0.5 }).stroke({ color: palette.reference, width: 2 });
 
     s.line(CONFIG.centerX, CONFIG.centerY - CONFIG.lensHeight / 2, CONFIG.centerX, CONFIG.centerY + CONFIG.lensHeight / 2)
-      .stroke({ color: "#3498db", width: 1, dasharray: "2,2", opacity: 0.5 });
+      .stroke({ color: palette.reference, width: 1, dasharray: "2,2", opacity: 0.5 });
 
     const points = [
       { x: CONFIG.centerX - CONFIG.f, label: "F" },
@@ -180,11 +181,11 @@ const ConvexLensSim: React.FC = () => {
     ];
 
     points.forEach(p => {
-      s.circle(8).center(p.x, CONFIG.centerY).fill("#2c3e50");
-      s.text(p.label).move(p.x - 5, CONFIG.centerY + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
+      s.circle(8).center(p.x, CONFIG.centerY).fill(palette.canvasText);
+      s.text(p.label).move(p.x - 5, CONFIG.centerY + (p.offset || 20)).fill(palette.canvasText).font({ size: "12px" });
     });
 
-    s.text("主光轴").move(CONFIG.centerX - CONFIG.axisLength / 2, CONFIG.centerY).fill("#2c3e50").font({ size: "12px" });
+    s.text("主光轴").move(CONFIG.centerX - CONFIG.axisLength / 2, CONFIG.centerY).fill(palette.canvasText).font({ size: "12px" });
 
     // Helpers
     const createArrow = (color: string) => {
@@ -194,11 +195,11 @@ const ConvexLensSim: React.FC = () => {
       return g;
     };
 
-    const objectArrow = createArrow("#2980b9");
-    const imageArrow = createArrow("#e74c3c");
+    const objectArrow = createArrow(palette.object);
+    const imageArrow = createArrow(palette.object).opacity(0.7);
 
-    const rayAttr = { color: "#f39c12", width: 2 };
-    const virtualRayAttr = { color: "#f39c12", width: 1, dasharray: "4,4" };
+    const rayAttr = { color: palette.ray, width: 2 };
+    const virtualRayAttr = { color: palette.ray, width: 1, dasharray: "4,4" };
 
     const rays = {
       parallel: s.path("").stroke(rayAttr).fill("none"),

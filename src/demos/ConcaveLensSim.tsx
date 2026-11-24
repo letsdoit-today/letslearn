@@ -10,6 +10,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette } from '@/lib/palette';
 
 const name = '凹透镜成像模拟';
 
@@ -148,7 +149,7 @@ const ConcaveLensSim: React.FC = () => {
 
     // Static Elements
     s.line(cx - CONFIG.axisLength / 2, cy, cx + CONFIG.axisLength / 2, cy)
-      .stroke({ color: "#7f8c8d", width: 2 });
+      .stroke({ color: palette.reference, width: 2 });
 
     s.path(`
         M ${cx - w / 2},${cy - h / 2}
@@ -157,10 +158,10 @@ const ConcaveLensSim: React.FC = () => {
         L ${cx - w / 2},${cy + h / 2}
         Q ${cx - 5},${cy} ${cx - w / 2},${cy - h / 2}
         Z
-    `).fill({ color: "#ecf0f1", opacity: 0.5 }).stroke({ color: "#bdc3c7", width: 2 });
+    `).fill({ color: palette.lensGlass, opacity: 0.5 }).stroke({ color: palette.reference, width: 2 });
 
     s.line(cx, cy - h / 2, cx, cy + h / 2)
-      .stroke({ color: "#3498db", width: 1, dasharray: "2,2", opacity: 0.5 });
+      .stroke({ color: palette.reference, width: 1, dasharray: "2,2", opacity: 0.5 });
 
     const points = [
       { x: cx - CONFIG.f, label: "F" },
@@ -171,11 +172,11 @@ const ConcaveLensSim: React.FC = () => {
     ];
 
     points.forEach(p => {
-      s.circle(8).center(p.x, cy).fill("#2c3e50");
-      s.text(p.label).move(p.x - 5, cy + (p.offset || 20)).fill("#2c3e50").font({ size: "12px" });
+      s.circle(8).center(p.x, cy).fill(palette.canvasText);
+      s.text(p.label).move(p.x - 5, cy + (p.offset || 20)).fill(palette.canvasText).font({ size: "12px" });
     });
 
-    s.text("主光轴").move(cx - CONFIG.axisLength / 2, cy).fill("#2c3e50").font({ size: "12px" });
+    s.text("主光轴").move(cx - CONFIG.axisLength / 2, cy).fill(palette.canvasText).font({ size: "12px" });
 
     // Helpers
     const createArrow = (color: string) => {
@@ -185,11 +186,11 @@ const ConcaveLensSim: React.FC = () => {
       return g;
     };
 
-    const objectArrow = createArrow("#2980b9");
-    const imageArrow = createArrow("#e74c3c").opacity(0.7);
+    const objectArrow = createArrow(palette.object);
+    const imageArrow = createArrow(palette.object).opacity(0.7);
 
-    const rayAttr = { color: "#f39c12", width: 2 };
-    const dashedRayAttr = { color: "#f39c12", width: 1, dasharray: "4,4" };
+    const rayAttr = { color: palette.ray, width: 2 };
+    const dashedRayAttr = { color: palette.ray, width: 1, dasharray: "4,4" };
 
     const rays = {
       incidentParallel: s.path("").stroke(rayAttr).fill("none"),

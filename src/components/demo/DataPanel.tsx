@@ -4,6 +4,7 @@ export interface DataItem {
   label: string;
   value: string;
   className?: string;
+  color?: string;
   mono?: boolean;
   highlight?: boolean;
 }
@@ -23,6 +24,7 @@ export function DataPanel({ items }: { items: DataItem[] }) {
               item.highlight && 'font-bold',
               item.className,
             )}
+            style={item.color ? { color: item.color } : undefined}
           >
             {item.value}
           </span>

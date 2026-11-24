@@ -9,6 +9,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette, rgba } from '@/lib/palette';
 
 const name = '空气-水折射实验';
 
@@ -169,34 +170,34 @@ const AirWaterRefraction: React.FC = () => {
     s.line(
       CONFIG.CENTER_X - CONFIG.AXIS_LENGTH / 2, CONFIG.CENTER_Y,
       CONFIG.CENTER_X + CONFIG.AXIS_LENGTH / 2, CONFIG.CENTER_Y
-    ).stroke({ color: "#7f8c8d", width: 2 });
+    ).stroke({ color: palette.reference, width: 2 });
 
     s.line(
       CONFIG.CENTER_X, CONFIG.CENTER_Y - 200,
       CONFIG.CENTER_X, CONFIG.CENTER_Y + 200
-    ).stroke({ color: "#95a5a6", width: 1, dasharray: "5,5" });
+    ).stroke({ color: palette.reference, width: 1, dasharray: "5,5" });
 
-    s.rect(800, 400).move(0, CONFIG.CENTER_Y).fill("#a3b0eaff").opacity(0.5);
-    s.text("介质1 n₁").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y - 40).fill("#7f8c8d").font({ size: "16px" });
-    s.text("介质2 n₂").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y + 20).fill("#3498dbff").font({ size: "16px" });
+    s.rect(800, 400).move(0, CONFIG.CENTER_Y).fill(rgba(palette.water, 0.5));
+    s.text("介质1 n₁").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y - 40).fill(palette.canvasText).font({ size: "16px" });
+    s.text("介质2 n₂").move(CONFIG.CENTER_X - 300, CONFIG.CENTER_Y + 20).fill(palette.canvasText).font({ size: "16px" });
 
     // Dynamic Elements
     const rays = {
-      i: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
-      r: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none"),
-      t: s.path("").stroke({ color: "#e74c3c", width: 4 }).fill("none")
+      i: s.path("").stroke({ color: palette.ray, width: 4 }).fill("none"),
+      r: s.path("").stroke({ color: palette.ray, width: 4 }).fill("none"),
+      t: s.path("").stroke({ color: palette.ray, width: 4 }).fill("none")
     };
 
     const arcs = {
-      i: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
-      r: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none"),
-      t: s.path("").stroke({ color: "#7f8c8d", width: 1 }).fill("none")
+      i: s.path("").stroke({ color: palette.reference, width: 1 }).fill("none"),
+      r: s.path("").stroke({ color: palette.reference, width: 1 }).fill("none"),
+      t: s.path("").stroke({ color: palette.reference, width: 1 }).fill("none")
     };
 
     const angleTexts = {
-      i: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
-      r: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" }),
-      t: s.text("").fill("#7f8c8d").font({ size: "12px", anchor: "middle" })
+      i: s.text("").fill(palette.canvasText).font({ size: "12px", anchor: "middle" }),
+      r: s.text("").fill(palette.canvasText).font({ size: "12px", anchor: "middle" }),
+      t: s.text("").fill(palette.canvasText).font({ size: "12px", anchor: "middle" })
     };
 
     snapRef.current = { s, rays, arcs, angleTexts };
@@ -228,8 +229,8 @@ const AirWaterRefraction: React.FC = () => {
   const dataItems: DataItem[] = [
     { label: '入射角 θᵢ', value: `${data.thetaI.toFixed(1)}°` },
     { label: '折射角 θᵗ', value: `${data.thetaT.toFixed(1)}°` },
-    { label: '反射比 R', value: `${data.R.toFixed(3)}`, className: 'text-[#e74c3c]' },
-    { label: '透射比 T', value: `${data.T.toFixed(3)}`, className: 'text-[#e74c3c]' },
+    { label: '反射比 R', value: `${data.R.toFixed(3)}`, color: palette.ray },
+    { label: '透射比 T', value: `${data.T.toFixed(3)}`, color: palette.ray },
   ];
 
   return (

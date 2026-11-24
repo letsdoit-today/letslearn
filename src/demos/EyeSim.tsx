@@ -5,6 +5,7 @@ import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
+import { palette, rgba } from '@/lib/palette';
 
 const name = '人眼视觉调节原理模拟';
 
@@ -67,35 +68,35 @@ const EyeSim: React.FC = () => {
       <SimulationCanvas>
         <svg viewBox="0 0 1000 500" className="w-full h-auto">
           {/* 背景参考线 */}
-          <line x1="0" y1="250" x2="1000" y2="250" stroke="#334155" strokeDasharray="5,5" />
+          <line x1="0" y1="250" x2="1000" y2="250" stroke={palette.reference} strokeDasharray="5,5" />
 
           {/* 眼球外壳 */}
           <path 
             d={`M ${LENS_X} 150 A ${EYE_RADIUS} ${EYE_RADIUS} 0 1 1 ${LENS_X} 350`} 
             fill="none" 
-            stroke="#64748b" 
+            stroke={palette.eyeShell} 
             strokeWidth="4" 
           />
-          <text x="820" y="240" fill="#94a3b8" fontSize="12">视网膜 (Retina)</text>
-          <line x1={RETINA_X} y1="150" x2={RETINA_X} y2="350" stroke="#ef4444" strokeWidth="3" opacity="0.3" />
+          <text x="820" y="240" fill={palette.reference} fontSize="12">视网膜 (Retina)</text>
+          <line x1={RETINA_X} y1="150" x2={RETINA_X} y2="350" stroke={palette.eyeShell} strokeWidth="3" opacity="0.5" />
 
           {/* 物体 (一支铅笔或简单的形状) */}
           <g transform={`translate(${accommodation.objX}, 250)`}>
-            <rect x="-5" y={`-${OBJECT_Y_SIZE}`} width="10" height={OBJECT_Y_SIZE * 2} fill="#fbbf24" rx="2" />
-            <circle cx="0" cy={`-${OBJECT_Y_SIZE}`} r="8" fill="#f87171" />
-            <text x="-20" y={`-${OBJECT_Y_SIZE + 15}`} fill="white" fontSize="14" fontWeight="bold">目标物体</text>
+            <rect x="-5" y={`-${OBJECT_Y_SIZE}`} width="10" height={OBJECT_Y_SIZE * 2} fill={palette.object} rx="2" />
+            <circle cx="0" cy={`-${OBJECT_Y_SIZE}`} r="8" fill={palette.objectStroke} />
+            <text x="-20" y={`-${OBJECT_Y_SIZE + 15}`} fill={palette.canvasText} fontSize="14" fontWeight="bold">目标物体</text>
           </g>
 
           {/* 光线: 从物体到晶状体 */}
           <path 
             d={`M ${accommodation.objX} ${accommodation.objY_Top} L ${LENS_X} 200`} 
-            stroke="rgba(56, 189, 248, 0.6)" 
+            stroke={rgba(palette.ray, 0.6)} 
             strokeWidth="1.5" 
             fill="none" 
           />
           <path 
             d={`M ${accommodation.objX} ${accommodation.objY_Bottom} L ${LENS_X} 300`} 
-            stroke="rgba(56, 189, 248, 0.6)" 
+            stroke={rgba(palette.ray, 0.6)} 
             strokeWidth="1.5" 
             fill="none" 
           />
@@ -103,22 +104,22 @@ const EyeSim: React.FC = () => {
           {/* 光线: 从晶状体到视网膜 */}
           <path 
             d={`M ${LENS_X} 200 L ${RETINA_X} ${accommodation.imageY_Top}`} 
-            stroke="rgba(56, 189, 248, 0.9)" 
+            stroke={rgba(palette.ray, 0.9)} 
             strokeWidth="2" 
             fill="none" 
           />
           <path 
             d={`M ${LENS_X} 300 L ${RETINA_X} ${accommodation.imageY_Bottom}`} 
-            stroke="rgba(56, 189, 248, 0.9)" 
+            stroke={rgba(palette.ray, 0.9)} 
             strokeWidth="2" 
             fill="none" 
           />
 
           {/* 倒立的像 (在视网膜上) */}
           <g transform={`translate(${RETINA_X}, 250)`}>
-            <rect x="-2" y={`-${OBJECT_Y_SIZE * 0.4}`} width="4" height={OBJECT_Y_SIZE * 0.8} fill="#f87171" opacity="0.8" />
-            <circle cx="0" cy={OBJECT_Y_SIZE * 0.4} r="4" fill="#fbbf24" opacity="0.8" />
-            <text x="15" y="0" fill="#ef4444" fontSize="12" writingMode="tb">倒立实像</text>
+            <rect x="-2" y={`-${OBJECT_Y_SIZE * 0.4}`} width="4" height={OBJECT_Y_SIZE * 0.8} fill={palette.objectStroke} opacity="0.8" />
+            <circle cx="0" cy={OBJECT_Y_SIZE * 0.4} r="4" fill={palette.object} opacity="0.8" />
+            <text x="15" y="0" fill={palette.canvasText} fontSize="12" writingMode="tb">倒立实像</text>
           </g>
 
           {/* 晶状体 (Lens) - 动态变形 */}
@@ -128,16 +129,16 @@ const EyeSim: React.FC = () => {
               Q ${LENS_X + accommodation.thickness} 250 ${LENS_X} 320 
               Q ${LENS_X - accommodation.thickness} 250 ${LENS_X} 180
             `} 
-            fill="rgba(186, 230, 253, 0.5)" 
-            stroke="#0ea5e9" 
+            fill={rgba(palette.lensBody, 0.3)} 
+            stroke={palette.lensBody} 
             strokeWidth="3"
           />
-          <text x={LENS_X - 60} y="170" fill="#38bdf8" fontSize="14" fontWeight="bold">晶状体</text>
+          <text x={LENS_X - 60} y="170" fill={palette.lensBody} fontSize="14" fontWeight="bold">晶状体</text>
           
           {/* 睫状肌 (Ciliary Muscles) */}
-          <rect x={LENS_X - 10} y="145" width="20" height="35" fill={accommodation.isNear ? "#f97316" : "#475569"} rx="5" />
-          <rect x={LENS_X - 10} y="320" width="20" height="35" fill={accommodation.isNear ? "#f97316" : "#475569"} rx="5" />
-          <text x={LENS_X + 25} y="140" fill={accommodation.isNear ? "#f97316" : "#94a3b8"} fontSize="12">睫状肌</text>
+          <rect x={LENS_X - 10} y="145" width="20" height="35" fill={accommodation.isNear ? palette.statusActive : palette.object} rx="5" />
+          <rect x={LENS_X - 10} y="320" width="20" height="35" fill={accommodation.isNear ? palette.statusActive : palette.object} rx="5" />
+          <text x={LENS_X + 25} y="140" fill={accommodation.isNear ? palette.statusActive : palette.reference} fontSize="12">睫状肌</text>
         </svg>
       </SimulationCanvas>
 
