@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "falling-ball",
+    "name": "球体落入液体实验",
+    "category": "physics",
+    "path": "/falling-ball/",
+    "description": "模拟球体从空中落入水中的过程，观察重力、浮力、阻力等受力情况。",
+    "keywords": ["球体落入液体", "浮力实验", "重力演示", "物理力学", "流体阻力"]
+  },
+  {
+    "slug": "friction-inclined-plane",
+    "name": "斜面摩擦实验",
+    "category": "physics",
+    "path": "/friction-inclined-plane/",
+    "description": "交互式斜面摩擦物理实验，模拟物体在斜面上的受力分析，可视化重力、支持力、摩擦力的平衡关系。",
+    "keywords": ["斜面摩擦", "力学实验", "受力分析", "摩擦力", "物理力学"]
+  },
+  {
+    "slug": "air-water-refraction",
+    "name": "空气-水折射实验",
+    "category": "physics",
+    "path": "/air-water-refraction/",
+    "description": "交互式空气-水折射物理实验，模拟光线在不同介质中的折射现象，可视化斯涅尔定律和菲涅尔公式。",
+    "keywords": ["空气水折射", "光学实验", "斯涅尔定律", "菲涅尔公式", "物理光学"]
+  },
+  {
+    "slug": "convex-lens",
+    "name": "凸透镜成像模拟",
+    "category": "physics",
+    "path": "/convex-lens/",
+    "description": "交互式模拟凸透镜成像规律。",
+    "keywords": ["凸透镜成像", "光学实验", "实像形成", "透镜折射", "物理光学"]
+  },
+  {
+    "slug": "concave-lens",
+    "name": "凹透镜成像模拟",
+    "category": "physics",
+    "path": "/concave-lens/",
+    "description": "交互式模拟凹透镜成像规律。",
+    "keywords": ["凹透镜成像", "光学实验", "虚像形成", "透镜折射", "物理光学"]
+  },
+  {
+    "slug": "eye-simulation",
+    "name": "人眼视觉调节原理模拟",
+    "category": "physics",
+    "path": "/eye-simulation/",
+    "description": "交互式人眼视觉调节物理实验，模拟晶状体如何通过改变厚度来调节焦距，可视化人眼成像原理。",
+    "keywords": ["人眼视觉调节", "晶状体调节", "光学实验", "物理光学", "视觉成像"]
+  }
+]

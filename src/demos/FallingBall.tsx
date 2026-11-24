@@ -1,25 +1,25 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { SVG, Svg, G, Rect, Circle, Line, Polygon, Text, Matrix } from '@svgdotjs/svg.js';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import type { G, Circle, Line, Polygon, Text } from '@svgdotjs/svg.js';
+import { Matrix } from '@svgdotjs/svg.js';
 import { useSEO } from '@/hooks/useSEO';
+import { useSimulation } from '@/hooks/useSimulation';
+import { useSVGScene } from '@/hooks/useSVGScene';
+import { simulateFallingBall, type FallingBallState } from '@/lib/physics/fallingBall';
+import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoControls } from '@/components/demo/DemoControls';
+import { ParamSlider } from '@/components/demo/ParamSlider';
+import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
+import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 
 const name = '球体落入液体实验';
 
-interface SimulationState {
-    t: number;
-    y: number;
-    v: number;
-    G: number;
-    Fb: number;
-    Fd: number;
-    N: number;
-    Fnet: number;
+interface SnapContext {
+    ball: Circle;
+    arrowG: G;
+    arrowFb: G;
+    arrowFd: G;
+    arrowN: G;
 }
 
 const FallingBall: React.FC = () => {
@@ -32,11 +32,9 @@ const FallingBall: React.FC = () => {
     });
 
     const svgRef = useRef<SVGSVGElement>(null);
-    const [isRunning, setIsRunning] = useState(false);
-    const [time, setTime] = useState(0);
     const [density, setDensity] = useState(1000);
     const [radius, setRadius] = useState(0.07);
-    const [rhoBall, setRhoBall] = useState(7800); // Ball density (was constant)
+    const [rhoBall, setRhoBall] = useState(7800);
 
     // Physics Constants
     const g = 9.8;
@@ -46,110 +44,31 @@ const FallingBall: React.FC = () => {
     const height = 500;
     const waterLevel = 200;
 
-    // Simulation Data Cache
-    const simulationData = useRef<SimulationState[]>([]);
-    const maxTime = useRef(2);
-    const snapContext = useRef<{
-        s: Svg;
-        ball: Circle;
-        water: Rect;
-        arrowG: G;
-        arrowFb: G;
-        arrowFd: G;
-        arrowN: G;
-    } | null>(null);
+    const snapContext = useRef<SnapContext | null>(null);
 
-    // Calculate Simulation Data
-    const calculateSimulation = useMemo(() => {
-        return () => {
-            const data: SimulationState[] = [];
-            const dt = 0.01;
-            let t = 0;
-            let y = 50; // Initial Y
-            let v = 0;
+    const sim = useSimulation<FallingBallState>(
+        () => simulateFallingBall({ density, radius, rhoBall, g, Cd, pixelsPerMeter, height, waterLevel }),
+        [density, radius, rhoBall],
+        { dt: 0.01 },
+    );
 
-            const mass = rhoBall * (4 / 3) * Math.PI * Math.pow(radius, 3);
-
-            // Limit max time or stop when settled
-            while (t <= 60) {
-                const G = mass * g;
-
-                // Buoyancy
-                let Vsub = 0;
-                const distFromSurface = (y - waterLevel) / pixelsPerMeter;
-
-                if (distFromSurface > radius) {
-                    Vsub = (4 / 3) * Math.PI * Math.pow(radius, 3);
-                } else if (distFromSurface < -radius) {
-                    Vsub = 0;
-                } else {
-                    const h = radius + distFromSurface;
-                    Vsub = (Math.PI * Math.pow(h, 2) / 3) * (3 * radius - h);
-                }
-
-                const Fb = density * g * Vsub;
-
-                // Drag
-                const immersionRatio = Vsub / ((4 / 3) * Math.PI * Math.pow(radius, 3));
-                const area = Math.PI * Math.pow(radius, 2);
-                const vDir = v > 0 ? 1 : -1;
-                let Fd = 0.5 * Cd * density * area * Math.pow(v, 2) * immersionRatio * vDir;
-
-                // Support Force
-                let N = 0;
-
-                // Collision/Ground
-                if (y + radius * pixelsPerMeter >= height) {
-                    y = height - radius * pixelsPerMeter;
-                    v = 0;
-                    Fd = 0;
-                    N = G - Fb;
-                    if (N < 0) N = 0;
-                }
-
-                const Fnet = G - Fb - Fd - N;
-
-                data.push({ t, y, v, G, Fb, Fd, N, Fnet });
-
-                const a = Fnet / mass;
-                v += a * dt;
-                y += v * dt * pixelsPerMeter;
-
-                if (y + radius * pixelsPerMeter > height) {
-                    y = height - radius * pixelsPerMeter;
-                    v = 0;
-                }
-
-                t += dt;
-            }
-            simulationData.current = data;
-            maxTime.current = data[data.length - 1].t;
-        };
-    }, [density, radius, rhoBall]);
-
-    // Initialize Snap
-    useEffect(() => {
-        if (!svgRef.current) return;
-
-        const s = SVG(svgRef.current);
-        s.clear();
-
+    useSVGScene(svgRef, (draw) => {
         // Draw Water
-        const water = s.rect(width, height - waterLevel).move(0, waterLevel);
+        const water = draw.rect(width, height - waterLevel).move(0, waterLevel);
         water.attr({ fill: "rgba(52, 152, 219, 0.5)", stroke: "none" });
 
-        s.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", "stroke-width": 2 });
+        draw.line(0, waterLevel, width, waterLevel).attr({ stroke: "#2980b9", "stroke-width": 2 });
 
         // Draw Ball
-        const ball = s.circle(radius * pixelsPerMeter * 2).center(width / 2, 50);
+        const ball = draw.circle(radius * pixelsPerMeter * 2).center(width / 2, 50);
         ball.attr({ fill: "#95a5a6", stroke: "#7f8c8d", "stroke-width": 2 });
 
         // Helper for arrows
         const createArrow = (color: string) => {
-            const g = s.group();
-            const line = s.line(0, 0, 0, 50);
-            const head = s.polygon('-5,50 5,50 0,60');
-            const label = s.text("").move(10, 30);
+            const g = draw.group();
+            const line = draw.line(0, 0, 0, 50);
+            const head = draw.polygon('-5,50 5,50 0,60');
+            const label = draw.text("").move(10, 30);
 
             line.attr({ stroke: color, "stroke-width": 3 });
             head.attr({ fill: color });
@@ -167,65 +86,19 @@ const FallingBall: React.FC = () => {
         const arrowFd = createArrow("#f1c40f");
         const arrowN = createArrow("#9b59b6");
 
-        snapContext.current = { s, ball, water, arrowG, arrowFb, arrowFd, arrowN };
+        snapContext.current = { ball, arrowG, arrowFb, arrowFd, arrowN };
+    });
 
-        calculateSimulation();
-        updateVisuals(0);
+    const updateVisuals = useCallback((frame: FallingBallState) => {
+        const ctx = snapContext.current;
+        if (!ctx) return;
 
-    }, []); // Run once on mount
-
-    // Re-run simulation when params change
-    useEffect(() => {
-        calculateSimulation();
-        // Update visuals for current time with new params
-        updateVisuals(time);
-
-        // Update ball radius visual
-        if (snapContext.current) {
-            snapContext.current.ball.radius(radius * pixelsPerMeter);
-        }
-    }, [density, radius, calculateSimulation]);
-
-    // Animation Loop
-    useEffect(() => {
-        let animationFrameId: number;
-
-        const animate = () => {
-            if (isRunning) {
-                setTime(prev => {
-                    const nextTime = prev + 0.01;
-                    if (nextTime >= maxTime.current) {
-                        setIsRunning(false);
-                        return maxTime.current;
-                    }
-                    return nextTime;
-                });
-            }
-            animationFrameId = requestAnimationFrame(animate);
-        };
-
-        animate();
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [isRunning]);
-
-    // Update Visuals when time changes
-    useEffect(() => {
-        updateVisuals(time);
-    }, [time]);
-
-    const updateVisuals = (t: number) => {
-        if (!snapContext.current || simulationData.current.length === 0) return;
-
-        const { ball, arrowG, arrowFb, arrowFd, arrowN } = snapContext.current;
-
-        // Find frame
-        const frame = simulationData.current.find(f => f.t >= t) || simulationData.current[simulationData.current.length - 1];
-        if (!frame) return;
+        const { ball, arrowG, arrowFb, arrowFd, arrowN } = ctx;
 
         // Update Ball
         ball.cy(frame.y);
+        ball.radius(radius * pixelsPerMeter);
 
-        // Update Arrows
         const updateArrow = (arrow: G, x: number, y: number, length: number, angle: number, text: string) => {
             if (Math.abs(length) < 0.015) {
                 arrow.hide();
@@ -237,7 +110,6 @@ const FallingBall: React.FC = () => {
             const head = arrow.findOne('polygon') as Polygon;
             const label = arrow.findOne('text') as Text;
 
-            // Limit arrow length visually if too large, but scaling is better
             const displayLen = length;
 
             line.plot(0, 0, 0, displayLen);
@@ -247,7 +119,6 @@ const FallingBall: React.FC = () => {
             const matrix = new Matrix().translate(x, y).rotate(angle, x, y);
             arrow.transform(matrix);
 
-            // Text rotation fix
             if (angle === 180) {
                 label.transform({ rotate: 180, origin: 'center' }).x(-25).y(displayLen / 2);
             } else {
@@ -265,157 +136,108 @@ const FallingBall: React.FC = () => {
         } else {
             updateArrow(arrowFd, width / 2, frame.y, Math.abs(frame.Fd) * arrowScale, 0, "Fd");
         }
-    };
+    }, [radius, pixelsPerMeter, width]);
 
-    // Current data for display
-    const currentFrame = simulationData.current.find(f => f.t >= time) || { G: 0, Fb: 0, Fd: 0, N: 0, Fnet: 0, v: 0, y: 50 };
+    useEffect(() => {
+        if (sim.currentFrame) {
+            updateVisuals(sim.currentFrame);
+        }
+    }, [sim.currentFrame, updateVisuals]);
+
+    const currentFrame = sim.currentFrame ?? { t: 0, y: 50, v: 0, G: 0, Fb: 0, Fd: 0, N: 0, Fnet: 0 };
     const currentH = (waterLevel - currentFrame.y) / pixelsPerMeter;
 
+    const dataItems: DataItem[] = [
+        { label: '高度 h', value: `${currentH.toFixed(2)} m` },
+        { label: '速度 v', value: `${currentFrame.v.toFixed(2)} m/s` },
+        { label: '重力 G', value: `${currentFrame.G.toFixed(2)} N`, className: 'text-[#e74c3c]' },
+        { label: '浮力 Fb', value: `${currentFrame.Fb.toFixed(2)} N`, className: 'text-[#3498db]' },
+        { label: '阻力 Fd', value: `${Math.abs(currentFrame.Fd).toFixed(2)} N`, className: 'text-[#f1c40f]' },
+        { label: '支持力 N', value: `${currentFrame.N.toFixed(2)} N`, className: 'text-[#9b59b6]' },
+        { label: '净力 Fnet', value: `${currentFrame.Fnet.toFixed(2)} N`, highlight: true },
+    ];
+
     return (
-        <div className="container mx-auto p-4 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>{name}</CardTitle>
-                    <CardDescription>
-                        {Demos.find(demo => demo.name === name)?.description || ''}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col lg:flex-row gap-6">
-                    {/* Canvas Area */}
-                    <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
-                        <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" />
+        <DemoPage
+            title={name}
+            description={Demos.find(demo => demo.name === name)?.description || ''}
+        >
+            <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height}`}>
+                {/* Legend Overlay */}
+                <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#e74c3c] block"></span> 重力 G</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#3498db] block"></span> 浮力 Fb</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#f1c40f] block"></span> 阻力 Fd</div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#9b59b6] block"></span> 支持力 N</div>
+                </div>
+            </SimulationCanvas>
 
-                        {/* Legend Overlay */}
-                        <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#e74c3c] block"></span> 重力 G</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#3498db] block"></span> 浮力 Fb</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#f1c40f] block"></span> 阻力 Fd</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-[#9b59b6] block"></span> 支持力 N</div>
-                        </div>
+            <DemoSidebar>
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">实验控制</h3>
+                    <DemoControls
+                        isPlaying={sim.isRunning}
+                        onToggle={sim.toggle}
+                        onReset={sim.reset}
+                        hoverTip={<>点击自动演示，或<p className="font-bold">手动滑动下方的时间轴</p>以控制时间。</>}
+                    />
+
+                    <div className="space-y-3">
+                        <ParamSlider
+                            label="液体密度 (ρ)"
+                            value={density}
+                            min={800} max={1200} step={50}
+                            onValueChange={setDensity}
+                            formatValue={(v) => `${v} kg/m³`}
+                        />
+                        <ParamSlider
+                            label="球体密度 (ρ)"
+                            value={rhoBall}
+                            min={1000} max={20000} step={100}
+                            onValueChange={setRhoBall}
+                            formatValue={(v) => `${v} kg/m³`}
+                        />
+                        <ParamSlider
+                            label="球半径 (r)"
+                            value={radius}
+                            min={0.05} max={0.2} step={0.01}
+                            onValueChange={setRadius}
+                            formatValue={(v) => `${v} m`}
+                        />
+                        <ParamSlider
+                            label="时间 (t)"
+                            value={sim.time}
+                            min={0} max={sim.maxTime} step={0.01}
+                            onValueChange={(v) => { sim.pause(); sim.setTime(v); }}
+                            formatValue={(v) => `${v.toFixed(2)} s`}
+                        />
                     </div>
+                </div>
 
-                    {/* Controls & Data */}
-                    <div className="w-full lg:w-80 space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-lg">实验控制</h3>
-                            <div className="flex gap-2">
-                                <HoverCard>
-                                    <HoverCardTrigger className='w-full'>
-                                        <Button className='w-full' onClick={() => setIsRunning(!isRunning)} variant={isRunning ? "secondary" : "default"}>
-                                            {isRunning ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                                            {isRunning ? "暂停" : "自动演示"}
-                                        </Button>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent>
-                                        点击自动演示，或<p className="font-bold">手动滑动下方的时间轴</p>以控制时间。
-                                    </HoverCardContent>
-                                </HoverCard>
-                                <Button onClick={() => { setIsRunning(false); setTime(0); }} variant="outline">
-                                    <RotateCcw className="w-4 h-4 mr-2" />
-                                </Button>
-                            </div>
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">实时数据</h3>
+                    <DataPanel items={dataItems} />
+                </div>
 
-                            <div className="space-y-3">
-                                <div className="space-y-1">
-                                    <Label>液体密度 (ρ): {density} kg/m³</Label>
-                                    <Slider
-                                        value={[density]}
-                                        min={800} max={1200} step={50}
-                                        onValueChange={(vals) => setDensity(vals[0])}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label>球体密度 (ρ): {rhoBall} kg/m³</Label>
-                                    <Slider
-                                        value={[rhoBall]}
-                                        min={1000} max={20000} step={100}
-                                        onValueChange={(vals) => setRhoBall(vals[0])}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label>球半径 (r): {radius} m</Label>
-                                    <Slider
-                                        value={[radius]}
-                                        min={0.05} max={0.2} step={0.01}
-                                        onValueChange={(vals) => setRadius(vals[0])}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label>时间 (t): {time.toFixed(2)} s</Label>
-                                    <Slider
-                                        value={[time]}
-                                        min={0} max={maxTime.current} step={0.01}
-                                        onValueChange={(vals) => { setIsRunning(false); setTime(vals[0]); }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-lg">实时数据</h3>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span className="text-muted-foreground block">高度 h</span>
-                                    <span className="font-mono">{currentH.toFixed(2)} m</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">速度 v</span>
-                                    <span className="font-mono">{currentFrame.v.toFixed(2)} m/s</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">重力 G</span>
-                                    <span className="font-mono text-[#e74c3c]">{currentFrame.G.toFixed(2)} N</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">浮力 Fb</span>
-                                    <span className="font-mono text-[#3498db]">{currentFrame.Fb.toFixed(2)} N</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">阻力 Fd</span>
-                                    <span className="font-mono text-[#f1c40f]">{Math.abs(currentFrame.Fd).toFixed(2)} N</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">支持力 N</span>
-                                    <span className="font-mono text-[#9b59b6]">{currentFrame.N.toFixed(2)} N</span>
-                                </div>
-                                <div className="col-span-2 bg-slate-100 p-2 rounded">
-                                    <span className="text-muted-foreground block">净力 Fnet</span>
-                                    <span className="font-mono font-bold">{currentFrame.Fnet.toFixed(2)} N</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 原理说明 */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-lg">原理说明</h3>
-                            <div className="space-y-3">
-                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <h4 className="font-semibold text-blue-800 mb-2">牛顿第二定律</h4>
-                                    <p className="text-sm text-gray-700">
-                                        物体运动遵循牛顿第二定律 F = ma，其中F为净力，m为质量，a为加速度。
-                                        球体下落过程中，净力Fnet = G - Fb - Fd - N决定其加速度方向。
-                                    </p>
-                                </div>
-                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <h4 className="font-semibold text-blue-800 mb-2">阿基米德浮力原理</h4>
-                                    <p className="text-sm text-gray-700">
-                                        物体在液体中受到的浮力等于其排开液体的重量，Fb = ρ液体 × g × V排。
-                                        当球体完全浸沒时，V排等于球体体积；部分浸沒时，V排为浸沒部分的体积。
-                                    </p>
-                                </div>
-                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <h4 className="font-semibold text-blue-800 mb-2">流体阻力特性</h4>
-                                    <p className="text-sm text-gray-700">
-                                        球体在液体中运动时受到阻力Fd = ½ × Cd × ρ液体 × A × v²，
-                                        其中Cd为阻力系数，A为截面面积，v为相对速度。阻力方向与运动方向相反。
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">原理说明</h3>
+                    <div className="space-y-3">
+                        <PrincipleCard title="牛顿第二定律">
+                            物体运动遵循牛顿第二定律 F = ma，其中F为净力，m为质量，a为加速度。
+                            球体下落过程中，净力Fnet = G - Fb - Fd - N决定其加速度方向。
+                        </PrincipleCard>
+                        <PrincipleCard title="阿基米德浮力原理">
+                            物体在液体中受到的浮力等于其排开液体的重量，Fb = ρ液体 × g × V排。
+                            当球体完全浸沒时，V排等于球体体积；部分浸沒时，V排为浸沒部分的体积。
+                        </PrincipleCard>
+                        <PrincipleCard title="流体阻力特性">
+                            球体在液体中运动时受到阻力Fd = ½ × Cd × ρ液体 × A × v²，
+                            其中Cd为阻力系数，A为截面面积，v为相对速度。阻力方向与运动方向相反。
+                        </PrincipleCard>
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </DemoSidebar>
+        </DemoPage>
     );
 };
 

@@ -1,11 +1,15 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SVG, Svg, G, Path, Text, Matrix } from '@svgdotjs/svg.js';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import type { G, Path, Text } from '@svgdotjs/svg.js';
+import { Matrix } from '@svgdotjs/svg.js';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useSEO } from '@/hooks/useSEO';
+import { useSVGScene } from '@/hooks/useSVGScene';
+import { calculateInclinedPlaneForces } from '@/lib/physics/inclinedPlane';
+import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { ParamSlider } from '@/components/demo/ParamSlider';
+import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
+import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 
 const name = '斜面摩擦实验';
@@ -23,10 +27,10 @@ const FrictionInclinedPlane: React.FC = () => {
   
   // Simulation State
   const [mu, setMu] = useState(0.5);
-  const [angle, setAngle] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [status, setStatus] = useState<string>("静止状态");
+  const [angle, setAngle] = useState(0);
   const [physicsData, setPhysicsData] = useState({
     G: 0,
     N: 0,
@@ -46,14 +50,13 @@ const FrictionInclinedPlane: React.FC = () => {
     isSimulating: false,
     isPaused: false,
     isSliding: false,
-    blockPos: -245, // Scaled from original logic
+    blockPos: -245,
     velocity: 0,
     simSpeed: 0.2
   });
   
   // Snap Elements Ref
   const snapRef = useRef<{
-    s: Svg;
     plank: G;
     block: G;
     vecG: Path;
@@ -69,29 +72,17 @@ const FrictionInclinedPlane: React.FC = () => {
   // Constants
   const PIVOT_X = 600;
   const PIVOT_Y = 350;
-  const PLANK_LENGTH = 350; // Scaled
-  const BLOCK_SIZE = 42; // Scaled
+  const PLANK_LENGTH = 350;
+  const BLOCK_SIZE = 42;
 
   const updatePhysics = useCallback(() => {
     const state = stateRef.current;
     const { mass, g, mu, angleRad, isSliding } = state;
 
-    const G = mass * g;
-    const N = G * Math.cos(angleRad);
-    const Gx = G * Math.sin(angleRad);
-    const f_max = mu * N;
+    const forces = calculateInclinedPlaneForces({ mass, g, mu, angleRad, isSliding });
 
-    let f = 0;
-    if (isSliding) {
-      f = mu * N;
-    } else {
-      f = Gx;
-    }
-
-    setPhysicsData({ G, N, Gx, f, f_max });
+    setPhysicsData({ G: forces.G, N: forces.N, Gx: forces.Gx, f: forces.f, f_max: forces.fMax });
     setAngle(state.angle);
-
-    return { G, N, Gx, f, f_max };
   }, []);
 
   const draw = useCallback(() => {
@@ -106,13 +97,14 @@ const FrictionInclinedPlane: React.FC = () => {
     block.transform({ translateX: state.blockPos, translateY: 0 });
 
     // 3. Draw Vectors
-    const scale = 1.4; // Scaled
-    const physics = {
-        G: state.mass * state.g,
-        N: state.mass * state.g * Math.cos(state.angleRad),
-        Gx: state.mass * state.g * Math.sin(state.angleRad),
-        f: state.isSliding ? state.mu * state.mass * state.g * Math.cos(state.angleRad) : state.mass * state.g * Math.sin(state.angleRad)
-    };
+    const scale = 1.4;
+    const physics = calculateInclinedPlaneForces({
+      mass: state.mass,
+      g: state.g,
+      mu: state.mu,
+      angleRad: state.angleRad,
+      isSliding: state.isSliding,
+    });
 
     const cx = 0;
     const cy = -7 - BLOCK_SIZE/2;
@@ -158,15 +150,16 @@ const FrictionInclinedPlane: React.FC = () => {
     }
 
     if (!state.isPaused) {
-        const physics = {
-            G: state.mass * state.g,
-            N: state.mass * state.g * Math.cos(state.angleRad),
-            Gx: state.mass * state.g * Math.sin(state.angleRad),
-            f_max: state.mu * state.mass * state.g * Math.cos(state.angleRad)
-        };
+        const physics = calculateInclinedPlaneForces({
+            mass: state.mass,
+            g: state.g,
+            mu: state.mu,
+            angleRad: state.angleRad,
+            isSliding: state.isSliding,
+        });
 
         if (!state.isSliding) {
-            if (physics.Gx > physics.f_max) {
+            if (physics.Gx > physics.fMax) {
                 state.isSliding = true;
                 setStatus("物体开始下滑！(Gₓ > f_max)");
             } else {
@@ -194,12 +187,7 @@ const FrictionInclinedPlane: React.FC = () => {
     requestRef.current = requestAnimationFrame(loop);
   }, [draw, updatePhysics]);
 
-  useEffect(() => {
-    if (!svgRef.current) return;
-    
-    const s = SVG(svgRef.current);
-    s.clear();
-    
+  useSVGScene(svgRef, (s) => {
     // Layers
     const staticLayer = s.group();
     const plankLayer = s.group();
@@ -259,11 +247,13 @@ const FrictionInclinedPlane: React.FC = () => {
     blockLayer.add(labelG).add(labelN).add(labelF).add(labelGx);
 
     snapRef.current = {
-        s, plank: plankLayer, block: blockLayer,
+        plank: plankLayer, block: blockLayer,
         vecG, vecN, vecF, vecGx,
         labelG, labelN, labelF, labelGx
     };
+  });
 
+  useEffect(() => {
     draw();
     requestRef.current = requestAnimationFrame(loop);
 
@@ -313,106 +303,78 @@ const FrictionInclinedPlane: React.FC = () => {
     }
   };
 
+  const dataItems: DataItem[] = [
+    { label: '倾角 θ', value: `${angle.toFixed(1)}°`, className: 'text-lg' },
+    { label: '重力 G', value: `${physicsData.G.toFixed(1)} N`, className: 'text-[#e74c3c]' },
+    { label: '支持力 N', value: `${physicsData.N.toFixed(1)} N`, className: 'text-[#2ecc71]' },
+    { label: '下滑分力 Gx', value: `${physicsData.Gx.toFixed(1)} N`, className: 'text-[#9b59b6]' },
+    { label: '最大静摩擦 f_max', value: `${physicsData.f_max.toFixed(1)} N` },
+    { label: '当前摩擦力 f', value: `${physicsData.f.toFixed(1)} N`, className: 'text-[#3498db]', highlight: true },
+  ];
+
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{name}</CardTitle>
-          <CardDescription>
-            {Demos.find(demo => demo.name === name)?.description || ''}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
-            <svg ref={svgRef} viewBox="0 0 700 400" className="w-full h-auto" />
-            <div className={`absolute top-4 left-4 p-2 rounded text-sm font-bold ${
-                status.includes("下滑") ? "bg-red-100 text-red-700" : "bg-white/90 text-slate-700"
-            }`}>
-                {status}
-            </div>
+    <DemoPage
+      title={name}
+      description={Demos.find(demo => demo.name === name)?.description || ''}
+    >
+      <SimulationCanvas svgRef={svgRef} viewBox="0 0 700 400">
+        <div className={`absolute top-4 left-4 p-2 rounded text-sm font-bold ${
+            status.includes("下滑") ? "bg-red-100 text-red-700" : "bg-white/90 text-slate-700"
+        }`}>
+            {status}
+        </div>
+      </SimulationCanvas>
+      
+      <DemoSidebar>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实验控制</h3>
+          <div className="flex gap-2">
+            {!isRunning ? (
+                <Button onClick={handleStart} className="w-full">
+                    <Play className="w-4 h-4 mr-2" /> 自动演示
+                </Button>
+            ) : (
+                <Button onClick={handlePause} variant="secondary" className="w-full">
+                    {isPaused ? <Play className="w-4 h-4 mr-2" /> : <Pause className="w-4 h-4 mr-2" />}
+                    {isPaused ? "继续" : "暂停"}
+                </Button>
+            )}
+            <Button onClick={handleReset} variant="outline" size="icon">
+              <RotateCcw className="w-4 h-4" />
+            </Button>
           </div>
           
-          <div className="w-full lg:w-80 space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实验控制</h3>
-              <div className="flex gap-2">
-                {!isRunning ? (
-                    <Button onClick={handleStart} className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> 自动演示
-                    </Button>
-                ) : (
-                    <Button onClick={handlePause} variant="secondary" className="w-full">
-                        {isPaused ? <Play className="w-4 h-4 mr-2" /> : <Pause className="w-4 h-4 mr-2" />}
-                        {isPaused ? "继续" : "暂停"}
-                    </Button>
-                )}
-                <Button onClick={handleReset} variant="outline" size="icon">
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <div className="space-y-1">
-                <Label>摩擦系数 (μ): {mu.toFixed(2)}</Label>
-                <Slider 
-                  value={[mu]} 
-                  min={0.1} max={1.0} step={0.05}
-                  onValueChange={(vals) => handleMuChange(vals[0])}
-                  disabled={isRunning}
-                />
-              </div>
-            </div>
+          <ParamSlider
+            label="摩擦系数 (μ)"
+            value={mu}
+            min={0.1} max={1.0} step={0.05}
+            onValueChange={handleMuChange}
+            disabled={isRunning}
+            formatValue={(v) => v.toFixed(2)}
+          />
+        </div>
 
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实时数据</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground block">倾角 θ</span>
-                  <span className="font-mono text-lg">{angle.toFixed(1)}°</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">重力 G</span>
-                  <span className="font-mono text-[#e74c3c]">{physicsData.G.toFixed(1)} N</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">支持力 N</span>
-                  <span className="font-mono text-[#2ecc71]">{physicsData.N.toFixed(1)} N</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">下滑分力 Gx</span>
-                  <span className="font-mono text-[#9b59b6]">{physicsData.Gx.toFixed(1)} N</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">最大静摩擦 f_max</span>
-                  <span className="font-mono">{physicsData.f_max.toFixed(1)} N</span>
-                </div>
-                <div className="col-span-2 bg-slate-100 p-2 rounded">
-                  <span className="text-muted-foreground block">当前摩擦力 f</span>
-                  <span className="font-mono text-[#3498db] font-bold">{physicsData.f.toFixed(1)} N</span>
-                </div>
-              </div>
-            </div>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实时数据</h3>
+          <DataPanel items={dataItems} />
+        </div>
 
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">原理说明</h3>
-              <div className="space-y-3 text-sm">
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">斜面受力分析</h4>
-                  <p className="text-gray-700">物体在斜面上受到重力G、支持力N和摩擦力f的作用。重力可分解为平行于斜面的下滑分力Gx和垂直于斜面的分力Gy。</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">摩擦力特性</h4>
-                  <p className="text-gray-700">静摩擦力f随倾角增大而增大，最大静摩擦力f_max = μN。当Gx &gt; f_max时，物体开始滑动，摩擦力变为滑动摩擦力f = μN。</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">临界条件</h4>
-                  <p className="text-gray-700">临界倾角θ_c满足tanθ_c = μ。当θ &lt; θ_c时物体静止，θ &gt; θ_c时物体下滑。摩擦系数μ越大，临界倾角越大。</p>
-                </div>
-              </div>
-            </div>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">原理说明</h3>
+          <div className="space-y-3 text-sm">
+            <PrincipleCard title="斜面受力分析">
+              物体在斜面上受到重力G、支持力N和摩擦力f的作用。重力可分解为平行于斜面的下滑分力Gx和垂直于斜面的分力Gy。
+            </PrincipleCard>
+            <PrincipleCard title="摩擦力特性">
+              静摩擦力f随倾角增大而增大，最大静摩擦力f_max = μN。当Gx &gt; f_max时，物体开始滑动，摩擦力变为滑动摩擦力f = μN。
+            </PrincipleCard>
+            <PrincipleCard title="临界条件">
+              临界倾角θ_c满足tanθ_c = μ。当θ &lt; θ_c时物体静止，θ &gt; θ_c时物体下滑。摩擦系数μ越大，临界倾角越大。
+            </PrincipleCard>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DemoSidebar>
+    </DemoPage>
   );
 };
 

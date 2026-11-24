@@ -21,7 +21,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn, normalizePath } from '@/lib/utils';
 import Demos, { Demo } from '@/lib/Meta';
 
 interface LayoutProps {
@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['physics']);
 
   const getBreadcrumb = () => {
-    const demo = Demos.find(d => d.path === path);
+    const demo = Demos.find(d => normalizePath(d.path) === normalizePath(path));
     if (demo) {
       return demo.name;
     }
@@ -123,9 +123,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     group.items.map((item) => (
                       <Link key={item.path} to={item.path}>
                         <Button 
-                          variant={path === item.path ? "secondary" : "ghost"} 
+                          variant={normalizePath(path) === normalizePath(item.path) ? "secondary" : "ghost"} 
                           size="sm"
-                          className={cn("w-full justify-start", path === item.path && "bg-secondary")}
+                          className={cn("w-full justify-start", normalizePath(path) === normalizePath(item.path) && "bg-secondary")}
                         >
                           <item.icon className="w-4 h-4 mr-2" />
                           <span className="truncate">{item.name}</span>

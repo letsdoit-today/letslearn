@@ -8,32 +8,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const execAsync = promisify(exec);
 
-// 定義所有需要預渲染的路由
-const routes = [
-  // { 
-  //   path: '/', 
-  //   title: '物理學習平台 - 互動式物理實驗演示',
-  //   description: '探索物理世界的奇妙現象，通過互動式實驗學習力學、光學等物理原理。'
-  // },
-  {
-    path: '/falling-ball',
-  },
-  {
-    path: '/friction-inclined-plane',
-  },
-  {
-    path: '/air-water-refraction',
-  },
-  {
-    path: '/convex-lens',
-  },
-  {
-    path: '/concave-lens',
-  },
-  {
-    path: '/eye-simulation',
+const PORT = 4173;
+const BASE_URL = `http://localhost:${PORT}`;
+
+// 從單一數據源 demos.json 派生需要預渲染的路由
+const demosPath = path.join(__dirname, '..', 'src', 'lib', 'demos.json');
+const demos = JSON.parse(fs.readFileSync(demosPath, 'utf-8'));
+const routes = demos.map((demo) => ({ path: demo.path }));
+
+// 輪詢端口直到服務器就緒（替代固定 sleep）
+async function waitForServer(url, { timeout = 30000, interval = 250 } = {}) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeout) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return;
+    } catch {
+      // 尚未就緒，繼續輪詢
+    }
+    await new Promise((resolve) => setTimeout(resolve, interval));
   }
-];
+  throw new Error(`服务器在 ${timeout}ms 内未能就绪: ${url}`);
+}
 
 async function prerenderPages() {
   console.log('🚀 开始预渲染页面...');
@@ -41,7 +37,7 @@ async function prerenderPages() {
   // 启动本地服务器
   console.log('📡 启动本地服务器...');
   // 使用 spawn 创建可分离进程（cross-platform）
-  const serverProcess = spawn('npx', ['vite', 'preview', '--port', '4173'], {
+  const serverProcess = spawn('npx', ['vite', 'preview', '--port', String(PORT)], {
     cwd: path.join(__dirname, '..'),
     shell: true,
     detached: true,
@@ -49,10 +45,9 @@ async function prerenderPages() {
   });
   serverProcess.unref();
 
-  // 等待服务器启动
-  await new Promise(resolve => setTimeout(resolve, 3000));
-
   try {
+    // 等待服务器就绪（端口健康检查）
+    await waitForServer(BASE_URL);
     // 动态导入puppeteer
     let puppeteer = null;
     try {
@@ -61,10 +56,25 @@ async function prerenderPages() {
       puppeteer = await import('puppeteer-core');
     }
 
+    // 探测系统 Chrome 可执行文件路径（puppeteer 缓存未命中时回退）
+    const candidatePaths = process.platform === 'win32'
+      ? [
+          'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+          'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+          `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`,
+        ]
+      : [
+          '/usr/bin/google-chrome',
+          '/usr/bin/chromium-browser',
+          '/usr/bin/chromium',
+        ];
+    const executablePath = candidatePaths.find((p) => fs.existsSync(p));
+
     // 启动浏览器
     console.log('🌐 启动浏览器...');
     const browser = await puppeteer.default.launch({
       headless: 'new',
+      ...(executablePath ? { executablePath } : {}),
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
@@ -75,15 +85,15 @@ async function prerenderPages() {
         console.log(`🔄 渲染: ${route.path}`);
 
         // 导航到页面
-        await page.goto(`http://localhost:4173${route.path}`, {
+        await page.goto(`${BASE_URL}${route.path}`, {
           waitUntil: 'networkidle0',
           timeout: 30000
         });
 
-        // 等待React组件完全渲染
+        // 等待 React 组件挂载完成并置起预渲染就绪标志
         await page.waitForFunction(
-          () => document.querySelector('#root')?.innerHTML.includes('实验控制'),
-          { timeout: 10000 }
+          () => window.__PRERENDER_READY__ === true,
+          { timeout: 15000 }
         );
 
         // 获取渲染后的HTML内容
@@ -94,7 +104,8 @@ async function prerenderPages() {
         });
 
         // 生成文件路径
-        let filename = route.path === '/' ? 'index.html' : `${route.path.replace(/^\//, '')}/index.html`;
+        const dirName = route.path.replace(/^\/+|\/+$/g, '');
+        const filename = dirName ? `${dirName}/index.html` : 'index.html';
         const filePath = path.join(__dirname, '..', 'dist', filename);
 
         // 确保目录存在
@@ -139,13 +150,12 @@ async function prerenderPages() {
 
 // 主執行函數
 async function main() {
-  try {
-    // 檢查是否安裝了puppeteer
-    await import('puppeteer');
-    await prerenderPages();
-  } catch (error) {
-
-  }
+  // 檢查是否安裝了puppeteer
+  await import('puppeteer');
+  await prerenderPages();
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error('❌ 预渲染失败:', error);
+  process.exit(1);
+});

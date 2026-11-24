@@ -1,12 +1,14 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SVG, Svg, G, Path, Matrix } from '@svgdotjs/svg.js';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import type { Svg, G, Path } from '@svgdotjs/svg.js';
+import { Matrix } from '@svgdotjs/svg.js';
 import { useSEO } from '@/hooks/useSEO';
+import { useSVGScene } from '@/hooks/useSVGScene';
+import { calculateThinLens, imageTypeText } from '@/lib/physics/lens';
+import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoControls } from '@/components/demo/DemoControls';
+import { ParamSlider } from '@/components/demo/ParamSlider';
+import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
+import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 
 const name = '凹透镜成像模拟';
@@ -64,23 +66,15 @@ const ConcaveLensSim: React.FC = () => {
     };
   } | null>(null);
 
-  const calculatePhysics = (u: number) => {
-    const f = -CONFIG.f;
-    const v = (u * f) / (u - f);
-    const m = -v / u;
-    const typeKey = "image-type-upright-reduced-virtual";
-    return { v, m, typeKey };
-  };
-
   const updateScene = useCallback((u: number) => {
     if (!snapRef.current) return;
     const { objectArrow, imageArrow, rays } = snapRef.current;
 
-    const phys = calculatePhysics(u);
+    const phys = calculateThinLens(u, -CONFIG.f);
     setData({
       v: phys.v,
       m: phys.m,
-      typeText: "正立、缩小、虚像"
+      typeText: imageTypeText(phys.typeKey)
     });
 
     const cx = CONFIG.centerX;
@@ -105,10 +99,7 @@ const ConcaveLensSim: React.FC = () => {
     rays.refractedParallel.plot(`M${cx},${objTopY} L${xEnd},${yEnd}`);
 
     // 3. Virtual Focus (Backwards to Focus)
-    const imgTopY = objY - (objH * phys.m); // Or calculate from ray intersection
-    // Ideally, virtual focus ray goes from Lens(cx, objTopY) to Focus(cx-f, cy)
-    // But we only draw the dashed part relevant to the image?
-    // Let's match original logic: Lens -> Image
+    const imgTopY = objY - (objH * phys.m);
     rays.virtualFocus.plot(`M${cx},${objTopY} L${imgX},${imgTopY}`);
 
     // 4. Center Ray
@@ -149,11 +140,7 @@ const ConcaveLensSim: React.FC = () => {
     };
   }, [animating, animate]);
 
-  useEffect(() => {
-    if (!svgRef.current) return;
-    const s = SVG(svgRef.current);
-    s.clear();
-
+  useSVGScene(svgRef, (s) => {
     const cx = CONFIG.centerX;
     const cy = CONFIG.centerY;
     const w = CONFIG.lensWidth;
@@ -214,8 +201,7 @@ const ConcaveLensSim: React.FC = () => {
 
     snapRef.current = { s, objectArrow, imageArrow, rays };
     updateScene(300);
-
-  }, []);
+  });
 
   const handlePlay = () => {
     if (stateRef.current.u <= 35) {
@@ -239,104 +225,66 @@ const ConcaveLensSim: React.FC = () => {
     updateScene(300);
   };
 
+  const dataItems: DataItem[] = [
+    { label: '物距 u', value: u.toFixed(0) },
+    { label: '像距 v', value: Math.round(data.v).toString() },
+    { label: '放大率 m', value: data.m.toFixed(2) },
+    { label: '成像性质', value: data.typeText, highlight: true },
+  ];
+
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{name}</CardTitle>
-          <CardDescription>
-            {Demos.find(demo => demo.name === name)?.description || ''}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
-            <svg ref={svgRef} viewBox="0 0 800 500" className="w-full h-auto" />
+    <DemoPage
+      title={name}
+      description={Demos.find(demo => demo.name === name)?.description || ''}
+    >
+      <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+
+      <DemoSidebar>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实验控制</h3>
+          <DemoControls
+            isPlaying={animating}
+            onToggle={() => (animating ? handlePause() : handlePlay())}
+            onReset={handleReset}
+            hoverTip={<>点击自动演示，或<p className="font-bold">手动滑动下方的物距</p>以控制物距。</>}
+          />
+
+          <ParamSlider
+            label="物距 u"
+            value={u}
+            min={10} max={350} step={1}
+            onValueChange={(v) => {
+              stateRef.current.animating = false;
+              setAnimating(false);
+              stateRef.current.u = v;
+              setU(v);
+              updateScene(v);
+            }}
+            formatValue={(v) => v.toFixed(0)}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实时数据</h3>
+          <DataPanel items={dataItems} />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">原理说明</h3>
+          <div className="space-y-3">
+            <PrincipleCard title="凹透镜成像规律">
+              凹透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为负值。凹透镜总是形成正立、缩小的虚像，虚像与物体位于透镜同侧。
+            </PrincipleCard>
+            <PrincipleCard title="光线传播路径">
+              平行于主光轴的光线经凹透镜折射后发散，其反向延长线通过虚焦点；通过光心的光线传播方向不变；两条折射光线的反向延长线交点即为虚像位置。
+            </PrincipleCard>
+            <PrincipleCard title="成像特性">
+              凹透镜成像具有发散特性，虚像大小随物距变化而改变。物距越大，虚像越小；物距越小，虚像越大，但始终为缩小虚像。
+            </PrincipleCard>
           </div>
-
-          <div className="w-full lg:w-80 space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实验控制</h3>
-              <div className="flex gap-2">
-                <HoverCard>
-                  <HoverCardTrigger className='w-full'>
-                    {!animating ? (
-                      <Button onClick={handlePlay} className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> 自动演示
-                      </Button>
-                    ) : (
-                      <Button onClick={handlePause} variant="secondary" className="w-full">
-                        <Pause className="w-4 h-4 mr-2" /> 暂停
-                      </Button>
-                    )}
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    点击自动演示，或<p className="font-bold">手动滑动下方的物距</p>以控制物距。
-                  </HoverCardContent>
-                </HoverCard>
-                <Button onClick={handleReset} variant="outline" size="icon">
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="space-y-1">
-                <Label>物距 u: {u.toFixed(0)}</Label>
-                <Slider
-                  value={[u]}
-                  min={10} max={350} step={1}
-                  onValueChange={(vals) => {
-                    stateRef.current.animating = false;
-                    setAnimating(false);
-                    stateRef.current.u = vals[0];
-                    setU(vals[0]);
-                    updateScene(vals[0]);
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实时数据</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground block">物距 u</span>
-                  <span className="font-mono">{u.toFixed(0)}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">像距 v</span>
-                  <span className="font-mono">{Math.round(data.v)}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">放大率 m</span>
-                  <span className="font-mono">{data.m.toFixed(2)}</span>
-                </div>
-                <div className="col-span-2 bg-slate-100 p-2 rounded">
-                  <span className="text-muted-foreground block">成像性质</span>
-                  <span className="font-bold">{data.typeText}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">原理说明</h3>
-              <div className="space-y-3 text-sm">
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">凹透镜成像规律</h4>
-                  <p className="text-gray-700">凹透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为负值。凹透镜总是形成正立、缩小的虚像，虚像与物体位于透镜同侧。</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">光线传播路径</h4>
-                  <p className="text-gray-700">平行于主光轴的光线经凹透镜折射后发散，其反向延长线通过虚焦点；通过光心的光线传播方向不变；两条折射光线的反向延长线交点即为虚像位置。</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded border border-blue-100">
-                  <h4 className="font-semibold text-blue-800 mb-1">成像特性</h4>
-                  <p className="text-gray-700">凹透镜成像具有发散特性，虚像大小随物距变化而改变。物距越大，虚像越小；物距越小，虚像越大，但始终为缩小虚像。</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DemoSidebar>
+    </DemoPage>
   );
 };
 

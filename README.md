@@ -8,3 +8,9 @@ To add a new demo to this project, follow these steps:
 -  Add the demo to the `dynamicRoutes` array in `vite.config.ts`.
 -  Add the demo to the `Routes` array in `App.tsx`.
 -  Update the `README.md` file with the new demo.
+
+
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+
+PUPPETEER_EXECUTABLE_PATH=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe

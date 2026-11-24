@@ -1,12 +1,13 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SVG, Svg, Path, Text } from '@svgdotjs/svg.js';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import type { Svg, Path, Text } from '@svgdotjs/svg.js';
 import { useSEO } from '@/hooks/useSEO';
+import { useSVGScene } from '@/hooks/useSVGScene';
+import { toRad, toDeg, snellFresnel } from '@/lib/physics/refraction';
+import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoControls } from '@/components/demo/DemoControls';
+import { ParamSlider } from '@/components/demo/ParamSlider';
+import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
+import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 
 const name = '空气-水折射实验';
@@ -46,7 +47,6 @@ const AirWaterRefraction: React.FC = () => {
     T: 0
   });
 
-
   const stateRef = useRef({
     angleDeg: 45,
     isPlaying: false,
@@ -62,21 +62,6 @@ const AirWaterRefraction: React.FC = () => {
 
   const requestRef = useRef<number>();
 
-  // Helper Functions
-  const toRad = (deg: number) => deg * Math.PI / 180;
-  const toDeg = (rad: number) => rad * 180 / Math.PI;
-
-  const fresnel = (n1: number, n2: number, thetai: number, thetat: number) => {
-    const ci = Math.cos(thetai);
-    const ct = Math.cos(thetat);
-    const rs = Math.pow((n1 * ci - n2 * ct) / (n1 * ci + n2 * ct), 2);
-    const rp = Math.pow((n1 * ct - n2 * ci) / (n1 * ct + n2 * ci), 2);
-    const R = 0.5 * (rs + rp);
-    let T = 1 - R;
-    if (!isFinite(T) || T < 0) T = 0;
-    return { R, T };
-  };
-
   const arcPath = (r: number, sx: number, sy: number, ex: number, ey: number, sweep: number) => {
     return `M${sx},${sy} A${r},${r} 0 0 ${sweep} ${ex},${ey}`;
   };
@@ -90,15 +75,13 @@ const AirWaterRefraction: React.FC = () => {
     const L = CONFIG.RAY_LENGTH;
 
     const thetai = toRad(angle);
-    const sint = Math.min(1, (n1 / n2) * Math.sin(thetai));
-    const thetat = Math.asin(sint);
-    const fr = fresnel(n1, n2, thetai, thetat);
+    const { thetaT: thetat, R, T } = snellFresnel(n1, n2, thetai);
 
     setData({
       thetaI: angle,
       thetaT: toDeg(thetat),
-      R: fr.R,
-      T: fr.T
+      R,
+      T
     });
 
     // Ray Endpoints
@@ -112,11 +95,11 @@ const AirWaterRefraction: React.FC = () => {
     rays.i.plot(`M${ix0},${iy0} L${cx},${cy}`);
     rays.r.plot(`M${cx},${cy} L${irx},${iry}`);
     
-    rays.i.attr({ "stroke-width": 2 + 8 * (fr.R + fr.T)});
-    rays.r.attr({ "stroke-width": 2 + 8 * fr.R, "stroke-opacity": 0.6 + 0.4 * fr.R });
+    rays.i.attr({ "stroke-width": 2 + 8 * (R + T)});
+    rays.r.attr({ "stroke-width": 2 + 8 * R, "stroke-opacity": 0.6 + 0.4 * R });
     rays.t.plot(`M${cx},${cy} L${tx},${ty}`);
-    if(fr.T > 0.01){
-      rays.t.attr({ "stroke-width": 2 + 8 * fr.T, "stroke-opacity": 0.6 + 0.4 * fr.T });
+    if(T > 0.01){
+      rays.t.attr({ "stroke-width": 2 + 8 * T, "stroke-opacity": 0.6 + 0.4 * T });
     } else {
       rays.t.attr({ "stroke-width": 0, "stroke-opacity": 0 });
     }
@@ -181,11 +164,7 @@ const AirWaterRefraction: React.FC = () => {
     };
   }, [isPlaying, animate]);
 
-  useEffect(() => {
-    if (!svgRef.current) return;
-    const s = SVG(svgRef.current);
-    s.clear();
-
+  useSVGScene(svgRef, (s) => {
     // Static Elements
     s.line(
       CONFIG.CENTER_X - CONFIG.AXIS_LENGTH / 2, CONFIG.CENTER_Y,
@@ -222,8 +201,7 @@ const AirWaterRefraction: React.FC = () => {
 
     snapRef.current = { s, rays, arcs, angleTexts };
     updateScene(45);
-
-  }, []);
+  });
 
   const handlePlay = () => {
     if (stateRef.current.angleDeg <= 0.1) {
@@ -247,140 +225,93 @@ const AirWaterRefraction: React.FC = () => {
     updateScene(45);
   };
 
+  const dataItems: DataItem[] = [
+    { label: '入射角 θᵢ', value: `${data.thetaI.toFixed(1)}°` },
+    { label: '折射角 θᵗ', value: `${data.thetaT.toFixed(1)}°` },
+    { label: '反射比 R', value: `${data.R.toFixed(3)}`, className: 'text-[#e74c3c]' },
+    { label: '透射比 T', value: `${data.T.toFixed(3)}`, className: 'text-[#e74c3c]' },
+  ];
+
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{name}</CardTitle>
-          <CardDescription>
-            {Demos.find(demo => demo.name === name)?.description || ''}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
-            <svg ref={svgRef} viewBox="0 0 800 500" className="w-full h-auto" />
+    <DemoPage
+      title={name}
+      description={Demos.find(demo => demo.name === name)?.description || ''}
+    >
+      <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+
+      <DemoSidebar>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实验控制</h3>
+          <DemoControls
+            isPlaying={isPlaying}
+            onToggle={() => (isPlaying ? handlePause() : handlePlay())}
+            onReset={handleReset}
+            hoverTip={<>点击自动演示，或<p className="font-bold">手动滑动下方的入射角</p>。</>}
+          />
+
+          <ParamSlider
+            label="入射角"
+            value={angleDeg}
+            min={0} max={89} step={0.1}
+            onValueChange={(v) => {
+              stateRef.current.isPlaying = false;
+              setIsPlaying(false);
+              stateRef.current.angleDeg = v;
+              setAngleDeg(v);
+              updateScene(v);
+            }}
+            formatValue={(v) => `${v.toFixed(1)}°`}
+          />
+          <ParamSlider
+            label="介质1折射率 n₁"
+            value={n1}
+            min={1} max={2} step={0.1}
+            onValueChange={(v) => {
+              stateRef.current.isPlaying = false;
+              setIsPlaying(false);
+              setN1(v);
+              updateScene(angleDeg);
+            }}
+            formatValue={(v) => v.toFixed(2)}
+          />
+          <ParamSlider
+            label="介质2折射率 n₂"
+            value={n2}
+            min={1} max={2} step={0.1}
+            onValueChange={(v) => {
+              stateRef.current.isPlaying = false;
+              setIsPlaying(false);
+              setN2(v);
+              updateScene(angleDeg);
+            }}
+            formatValue={(v) => v.toFixed(2)}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">实时数据</h3>
+          <DataPanel items={dataItems} />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">原理说明</h3>
+          <div className="space-y-3">
+            <PrincipleCard title="折射率特性">
+              折射率n表示光在真空中的速度与在介质中速度的比值。
+              空气折射率约为1.0，水折射率约为1.33，玻璃折射率约为1.5。
+            </PrincipleCard>
+            <PrincipleCard title="斯涅尔定律">
+              光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵗ。
+              当光从光疏介质进入光密介质时，折射角小於入射角。
+            </PrincipleCard>
+            <PrincipleCard title="菲涅尔公式">
+              描述光在界面上的反射和透射比例，计算反射率R和透射率T。
+              当入射角接近90°时，反射率趋近于1，发生全反射现象。
+            </PrincipleCard>
           </div>
-
-          <div className="w-full lg:w-80 space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实验控制</h3>
-              <div className="flex gap-2">
-                <HoverCard>
-                  <HoverCardTrigger className='w-full'>
-                    {!isPlaying ? (
-                      <Button onClick={handlePlay} className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> 自动演示
-                      </Button>
-                    ) : (
-                      <Button onClick={handlePause} variant="secondary" className="w-full">
-                        <Pause className="w-4 h-4 mr-2" /> 暂停
-                      </Button>
-                    )}
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    点击自动演示，或<p className="font-bold">手动滑动下方的入射角</p>。
-                  </HoverCardContent>
-                </HoverCard>
-                <Button onClick={handleReset} variant="outline" size="icon">
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="space-y-1">
-                <Label>入射角: {angleDeg.toFixed(1)}°</Label>
-                <Slider
-                  value={[angleDeg]}
-                  min={0} max={89} step={0.1}
-                  onValueChange={(vals) => {
-                    stateRef.current.isPlaying = false;
-                    setIsPlaying(false);
-                    stateRef.current.angleDeg = vals[0];
-                    setAngleDeg(vals[0]);
-                    updateScene(vals[0]);
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>介质1折射率 n₁: {n1.toFixed(2)}</Label>
-                <Slider
-                  value={[n1]}
-                  min={1} max={2} step={0.1}
-                  onValueChange={(vals) => {
-                    stateRef.current.isPlaying = false;
-                    setIsPlaying(false);
-                    setN1(vals[0]);
-                    updateScene(angleDeg);
-                  }}
-                  />
-              </div>
-              <div className="space-y-1">
-                <Label>介质2折射率 n₂: {n2.toFixed(2)}</Label>
-                <Slider
-                  value={[n2]}
-                  min={1} max={2} step={0.1}
-                  onValueChange={(vals) => {
-                    stateRef.current.isPlaying = false;
-                    setIsPlaying(false);
-                    setN2(vals[0]);
-                    updateScene(angleDeg);
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">实时数据</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground block">入射角 θᵢ</span>
-                  <span className="font-mono">{data.thetaI.toFixed(1)}°</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">折射角 θᵗ</span>
-                  <span className="font-mono">{data.thetaT.toFixed(1)}°</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">反射比 R</span>
-                  <span className="font-mono text-[#e74c3c]">{data.R.toFixed(3)}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">透射比 T</span>
-                  <span className="font-mono text-[#e74c3c]">{data.T.toFixed(3)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 原理说明 */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">原理说明</h3>
-              <div className="space-y-3">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-2">折射率特性</h4>
-                  <p className="text-sm text-gray-700">
-                    折射率n表示光在真空中的速度与在介质中速度的比值。
-                    空气折射率约为1.0，水折射率约为1.33，玻璃折射率约为1.5。
-                  </p>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-2">斯涅尔定律</h4>
-                  <p className="text-sm text-gray-700">
-                    光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵗ。
-                    当光从光疏介质进入光密介质时，折射角小於入射角。
-                  </p>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-2">菲涅尔公式</h4>
-                  <p className="text-sm text-gray-700">
-                    描述光在界面上的反射和透射比例，计算反射率R和透射率T。
-                    当入射角接近90°时，反射率趋近于1，发生全反射现象。
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DemoSidebar>
+    </DemoPage>
   );
 };
 

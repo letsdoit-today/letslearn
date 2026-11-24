@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-24
+goal: 修复脚本/路径/文档脱节、收敛 demo 元信息为单一数据源、抽取公共抽象与物理纯函数、增强 SEO/预渲染健壮性
+skip_specs: true
