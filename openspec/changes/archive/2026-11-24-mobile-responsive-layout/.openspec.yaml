@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-24
+goal: 移动端收紧内容内边距，并让侧边栏默认收起、展开为抽屉浮层，减少移动端空间浪费
+skip_specs: true

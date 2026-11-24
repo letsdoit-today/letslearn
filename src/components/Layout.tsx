@@ -23,6 +23,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { cn, normalizePath } from '@/lib/utils';
 import Demos, { Demo } from '@/lib/Meta';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,8 +32,26 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [desktopOpen, setDesktopOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['physics']);
+
+  const sidebarOpen = isDesktop ? desktopOpen : mobileOpen;
+
+  const toggleSidebar = () => {
+    if (isDesktop) {
+      setDesktopOpen(prev => !prev);
+    } else {
+      setMobileOpen(prev => !prev);
+    }
+  };
+
+  const closeMobileSidebar = () => {
+    if (!isDesktop) {
+      setMobileOpen(false);
+    }
+  };
 
   const getBreadcrumb = () => {
     const demo = Demos.find(d => normalizePath(d.path) === normalizePath(path));
@@ -77,11 +96,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Backdrop (mobile only) */}
+      {!isDesktop && mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Left Sidebar */}
       <aside 
         className={cn(
           "border-r bg-card flex flex-col transition-all duration-300 ease-in-out overflow-hidden h-screen",
-          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full opacity-0 md:opacity-100 md:w-0 md:translate-x-0"
+          "fixed inset-y-0 left-0 z-50 w-64 shadow-xl",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          "md:static md:inset-auto md:z-auto md:shadow-none md:translate-x-0",
+          desktopOpen ? "md:w-64" : "md:w-0"
         )}
       >
         <div className="h-14 flex items-center px-6 border-b whitespace-nowrap">
@@ -92,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
         
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          <Link to="/">
+          <Link to="/" onClick={closeMobileSidebar}>
             <Button variant={path === '/' ? "secondary" : "ghost"} className="w-full justify-start mb-4">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               首页
@@ -121,7 +152,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="mt-1 ml-4 space-y-1 border-l pl-2">
                   {group.items.length > 0 ? (
                     group.items.map((item) => (
-                      <Link key={item.path} to={item.path}>
+                      <Link key={item.path} to={item.path} onClick={closeMobileSidebar}>
                         <Button 
                           variant={normalizePath(path) === normalizePath(item.path) ? "secondary" : "ghost"} 
                           size="sm"
@@ -159,15 +190,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 transition-all duration-300">
         {/* Top Header */}
-        <header className="h-14 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-10">
+        <header className="h-14 border-b bg-card flex items-center justify-between px-3 sm:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-4">
              <Button 
                variant="ghost" 
                size="icon" 
-               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-               title={isSidebarOpen ? "隐藏侧边栏" : "显示侧边栏"}
+               onClick={toggleSidebar}
+               title={sidebarOpen ? "隐藏侧边栏" : "显示侧边栏"}
              >
-               {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
+               {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
              </Button>
              
              {/* Breadcrumb Navigation */}
@@ -192,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-3 sm:p-6 overflow-auto">
           {children}
         </div>
       </main>
