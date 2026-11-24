@@ -8,6 +8,7 @@ import AirWaterRefraction from './demos/AirWaterRefraction';
 import ConvexLensSim from './demos/ConvexLensSim';
 import ConcaveLensSim from './demos/ConcaveLensSim';
 import EyeSim from './demos/EyeSim';
+import LeverBalance from './demos/LeverBalance';
 import Demos from './lib/Meta';
 
 const demoComponents: Record<string, ComponentType> = {
@@ -17,6 +18,7 @@ const demoComponents: Record<string, ComponentType> = {
   'convex-lens': ConvexLensSim,
   'concave-lens': ConcaveLensSim,
   'eye-simulation': EyeSim,
+  'lever-balance': LeverBalance,
 };
 
 function App() {
