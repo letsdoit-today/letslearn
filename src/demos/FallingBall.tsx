@@ -43,6 +43,7 @@ const FallingBall: React.FC = () => {
     const pixelsPerMeter = 200;
     const width = 800;
     const height = 500;
+    const bottomMargin = 120;
     const waterLevel = 200;
 
     const snapContext = useRef<SnapContext | null>(null);
@@ -50,7 +51,7 @@ const FallingBall: React.FC = () => {
     const sim = useSimulation<FallingBallState>(
         () => simulateFallingBall({ density, radius, rhoBall, g, Cd, pixelsPerMeter, height, waterLevel }),
         [density, radius, rhoBall],
-        { dt: 0.01 },
+        { dt: 0.01, speed: 0.25 },
     );
 
     useSVGScene(svgRef, (draw) => {
@@ -127,7 +128,7 @@ const FallingBall: React.FC = () => {
             }
         };
 
-        const arrowScale = 2;
+        const arrowScale = 1;
         updateArrow(arrowG, width / 2, frame.y, frame.G * arrowScale, 0, "G");
         updateArrow(arrowFb, width / 2, frame.y, frame.Fb * arrowScale, 180, "Fb");
         updateArrow(arrowN, width / 2, frame.y + radius * pixelsPerMeter, frame.N * arrowScale, 180, "N");
@@ -163,7 +164,7 @@ const FallingBall: React.FC = () => {
             title={name}
             description={Demos.find(demo => demo.name === name)?.description || ''}
         >
-            <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height}`}>
+            <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height + bottomMargin}`}>
                 {/* Legend Overlay */}
                 <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
                     <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceGravity }}></span> 重力 G</div>

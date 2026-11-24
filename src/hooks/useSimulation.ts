@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface UseSimulationOptions {
   dt?: number;
+  speed?: number;
 }
 
 export interface SimulationApi<T> {
@@ -20,7 +21,7 @@ export interface SimulationApi<T> {
 export function useSimulation<T extends { t: number }>(
   compute: () => T[],
   deps: unknown[],
-  { dt = 0.01 }: UseSimulationOptions = {},
+  { dt = 0.01, speed = 1 }: UseSimulationOptions = {},
 ): SimulationApi<T> {
   const frames = useMemo(compute, deps);
   const maxTime = useMemo(
@@ -45,7 +46,7 @@ export function useSimulation<T extends { t: number }>(
     let rafId = 0;
     const loop = () => {
       setTime((prev) => {
-        const next = prev + dt;
+        const next = prev + dt * speed;
         if (next >= maxTime) {
           setIsRunning(false);
           return maxTime;
@@ -57,7 +58,7 @@ export function useSimulation<T extends { t: number }>(
     rafId = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(rafId);
-  }, [isRunning, maxTime, dt]);
+  }, [isRunning, maxTime, dt, speed]);
 
   const currentFrame = useMemo(
     () => frames.find((f) => f.t >= time) ?? frames[frames.length - 1],

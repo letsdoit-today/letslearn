@@ -38,7 +38,7 @@ export function simulateFallingBall(params: FallingBallParams): FallingBallState
     height = 500,
     waterLevel = 200,
     dt = 0.01,
-    maxTime = 60,
+    maxTime = 10,
     initialY = 50,
   } = params;
 
@@ -46,11 +46,12 @@ export function simulateFallingBall(params: FallingBallParams): FallingBallState
   let t = 0;
   let y = initialY;
   let v = 0;
+  let landed = false;
 
   const mass = rhoBall * (4 / 3) * Math.PI * Math.pow(radius, 3);
   const fullVolume = (4 / 3) * Math.PI * Math.pow(radius, 3);
 
-  while (t <= maxTime) {
+  while (t <= maxTime && !landed) {
     const G = mass * g;
 
     // 浮力：按浸没体积计算
@@ -84,6 +85,7 @@ export function simulateFallingBall(params: FallingBallParams): FallingBallState
       Fd = 0;
       N = G - Fb;
       if (N < 0) N = 0;
+      landed = true;
     }
 
     const Fnet = G - Fb - Fd - N;

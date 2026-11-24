@@ -318,7 +318,7 @@ const FrictionInclinedPlane: React.FC = () => {
       title={name}
       description={Demos.find(demo => demo.name === name)?.description || ''}
     >
-      <SimulationCanvas svgRef={svgRef} viewBox="0 0 700 400">
+      <SimulationCanvas svgRef={svgRef} viewBox="0 0 700 500">
         <div className={`absolute top-4 left-4 p-2 rounded text-sm font-bold ${
             status.includes("下滑") ? "bg-red-100 text-red-700" : "bg-white/90 text-slate-700"
         }`}>
