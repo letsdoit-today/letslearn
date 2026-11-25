@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode, type RefObject } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 
 declare global {
   interface Window {
@@ -51,7 +51,7 @@ export function DemoPage({
     <div className="container mx-auto p-2 sm:p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">{title}</h1>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

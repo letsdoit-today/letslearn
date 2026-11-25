@@ -11,10 +11,10 @@ const execAsync = promisify(exec);
 const PORT = 4173;
 const BASE_URL = `http://localhost:${PORT}`;
 
-// 從單一數據源 demos.json 派生需要預渲染的路由
+// 從單一數據源 demos.json 派生需要預渲染的路由，並包含首頁
 const demosPath = path.join(__dirname, '..', 'src', 'lib', 'demos.json');
 const demos = JSON.parse(fs.readFileSync(demosPath, 'utf-8'));
-const routes = demos.map((demo) => ({ path: demo.path }));
+const routes = [{ path: '/' }, ...demos.map((demo) => ({ path: demo.path }))];
 
 // 輪詢端口直到服務器就緒（替代固定 sleep）
 async function waitForServer(url, { timeout = 30000, interval = 250 } = {}) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +10,15 @@ import Demos from '@/lib/Meta';
 const Dashboard: React.FC = () => {
   useSEO({
     title: '物理模拟实验 - 互动式物理学习平台',
-    description: '专业的物理学习平台，提供球体落入液体、斜面摩擦力、光的折射、凸透镜成像、凹透镜成像等交互式物理实验演示。',
+    description: '专业的物理学习平台，提供球体落入液体、斜面摩擦、光的折射、凸透镜与凹透镜成像、杠杆力矩、单摆、电磁感应等交互式物理实验演示，配合实时数据与受力分析，帮助学生直观理解力学、光学与电磁学概念。',
     keywords: '物理实验,力学演示,光学实验,物理学习,互动教学',
     canonical: 'https://learn.letsdoit.today',
     ogImage: 'https://learn.letsdoit.today/og-dashboard.jpg'
   });
+
+  useEffect(() => {
+    window.__PRERENDER_READY__ = true;
+  }, []);
 
   return (
     <div className="container mx-auto max-w-5xl px-3 sm:px-8">
