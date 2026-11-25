@@ -6,8 +6,9 @@ import { useSEO } from '@/hooks/useSEO';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { Button } from '@/components/ui/button';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
-import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
@@ -381,7 +382,7 @@ const LeverBalance: React.FC = () => {
       ? '右侧下沉'
       : '左侧下沉';
 
-  const dataItems: DataItem[] = [
+  const kpiItems: KpiItem[] = [
     { label: '有效力臂 L1′', value: `${state.arm1.toFixed(2)} m`, color: palette.forceComponent },
     { label: '有效力臂 L2′', value: `${state.arm2.toFixed(2)} m`, color: palette.forceComponent },
     { label: '左侧力矩 M1', value: `${state.m1.toFixed(1)} N·m`, color: palette.forceGravity },
@@ -389,17 +390,31 @@ const LeverBalance: React.FC = () => {
     {
       label: '力矩差 ΔM',
       value: `${state.net > 0 ? '+' : ''}${state.net.toFixed(1)} N·m`,
-      highlight: true,
     },
-    { label: '杠杆类型', value: state.leverType, className: 'text-lg' },
-    { label: '平衡状态', value: statusText, color: palette.statusActive, className: 'col-span-2' },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find((demo) => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="力矩与力臂">
+            力矩 M = F · L′，描述力使杠杆转动的效果。L′ 是支点到
+            <strong>力的作用线</strong>的垂直距离（力臂），而不是支点到力作用点的距离。
+          </PrincipleCard>
+          <PrincipleCard title="斜向施力为何费力">
+            当力与横梁夹角为 θ 时，有效力臂收缩为 L′ = L · sinθ。θ 越小力臂越短、力矩越小，
+            所以垂直施力（θ = 90°）效率最高。
+          </PrincipleCard>
+          <PrincipleCard title="杠杆平衡条件">
+            F1 · L1′ = F2 · L2′ 时杠杆平衡。力臂大的一侧省力，力臂小的一侧费力，等臂则不省力也不费力。
+            图中横梁倾角只是趋势示意，力矩数值才是判据。
+          </PrincipleCard>
+        </>
+      }
     >
+      <DemoMain>
       <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         <div
           className={`absolute top-4 left-4 px-3 py-2 rounded text-sm font-bold ${
@@ -431,6 +446,8 @@ const LeverBalance: React.FC = () => {
           </div>
         </div>
       </SimulationCanvas>
+        <KpiBar items={kpiItems} />
+      </DemoMain>
 
       <DemoSidebar>
         <div className="space-y-4">
@@ -518,27 +535,9 @@ const LeverBalance: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
-          <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3">
-            <PrincipleCard title="力矩与力臂">
-              力矩 M = F · L′，描述力使杠杆转动的效果。L′ 是支点到
-              <strong>力的作用线</strong>的垂直距离（力臂），而不是支点到力作用点的距离。
-            </PrincipleCard>
-            <PrincipleCard title="斜向施力为何费力">
-              当力与横梁夹角为 θ 时，有效力臂收缩为 L′ = L · sinθ。θ 越小力臂越短、力矩越小，
-              所以垂直施力（θ = 90°）效率最高。
-            </PrincipleCard>
-            <PrincipleCard title="杠杆平衡条件">
-              F1 · L1′ = F2 · L2′ 时杠杆平衡。力臂大的一侧省力，力臂小的一侧费力，等臂则不省力也不费力。
-              图中横梁倾角只是趋势示意，力矩数值才是判据。
-            </PrincipleCard>
-          </div>
+        <div className="space-y-2">
+          <h3 className="font-semibold text-lg">杠杆类型</h3>
+          <div className="text-sm text-muted-foreground">{state.leverType}</div>
         </div>
       </DemoSidebar>
     </DemoPage>

@@ -26,6 +26,11 @@ export const palette = {
   // 光
   ray: '#dc2626', // red-600 光线（实线光路）
 
+  // 电磁（颜色即语义，全站统一）
+  field: '#6366f1', // indigo-500 磁场（× 符号阵列）
+  current: '#f43f5e', // rose-500 感应电流与流动小点
+  emf: '#10b981', // emerald-500 动生电动势 ε
+
   // 介质 / 结构
   water: '#38bdf8', // sky-400 水域填充
   lensGlass: '#e2e8f0', // slate-200 透镜玻璃填充

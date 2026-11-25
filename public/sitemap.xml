@@ -17,7 +17,7 @@
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://learn.letsdoit.today/friction-inclined-plane</loc>
+        <loc>https://learn.letsdoit.today/friction-inclined-plane/</loc>
         <lastmod>2025-12-28T01:16:27.586Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -42,6 +42,24 @@
     </url>
     <url>
         <loc>https://learn.letsdoit.today/eye-simulation/</loc>
+        <lastmod>2025-12-28T01:16:27.586Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://learn.letsdoit.today/lever-balance/</loc>
+        <lastmod>2025-12-28T01:16:27.586Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://learn.letsdoit.today/pendulum-oscillation/</loc>
+        <lastmod>2025-12-28T01:16:27.586Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://learn.letsdoit.today/electromagnetic-induction/</loc>
         <lastmod>2025-12-28T01:16:27.586Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>

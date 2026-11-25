@@ -62,5 +62,13 @@
     "path": "/pendulum-oscillation/",
     "description": "交互式单摆实验，对比小角度与大角度摆动的周期差异，可视化绳张力、切向回复力与机械能转化，揭示简谐近似 sinθ ≈ θ 的适用范围。",
     "keywords": ["单摆", "简谐振动", "等时性", "周期公式", "sinθ近似", "物理力学"]
+  },
+  {
+    "slug": "electromagnetic-induction",
+    "name": "电磁感应实验",
+    "category": "physics",
+    "path": "/electromagnetic-induction/",
+    "description": "交互式电磁感应实验，模拟导体棒切割磁感线，支持惯性滑行、恒力驱动与匀速拖动三种模式，可视化电动势、感应电流、安培力与能量转化。",
+    "keywords": ["电磁感应", "导体棒切割磁感线", "法拉第定律", "楞次定律", "安培力", "物理电磁学"]
   }
 ]

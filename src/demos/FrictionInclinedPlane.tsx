@@ -7,6 +7,8 @@ import { useSEO } from '@/hooks/useSEO';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { calculateInclinedPlaneForces } from '@/lib/physics/inclinedPlane';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
@@ -304,20 +306,37 @@ const FrictionInclinedPlane: React.FC = () => {
     }
   };
 
-  const dataItems: DataItem[] = [
-    { label: '倾角 θ', value: `${angle.toFixed(1)}°`, className: 'text-lg' },
-    { label: '重力 G', value: `${physicsData.G.toFixed(1)} N`, color: palette.forceGravity },
-    { label: '支持力 N', value: `${physicsData.N.toFixed(1)} N`, color: palette.forceNormal },
+  const kpiItems: KpiItem[] = [
+    { label: '倾角 θ', value: `${angle.toFixed(1)}°` },
     { label: '下滑分力 Gx', value: `${physicsData.Gx.toFixed(1)} N`, color: palette.forceComponent },
     { label: '最大静摩擦 f_max', value: `${physicsData.f_max.toFixed(1)} N` },
-    { label: '当前摩擦力 f', value: `${physicsData.f.toFixed(1)} N`, color: palette.forceFriction, highlight: true },
+    { label: '当前摩擦力 f', value: `${physicsData.f.toFixed(1)} N`, color: palette.forceFriction },
+  ];
+
+  const dataItems: DataItem[] = [
+    { label: '重力 G', value: `${physicsData.G.toFixed(1)} N`, color: palette.forceGravity },
+    { label: '支持力 N', value: `${physicsData.N.toFixed(1)} N`, color: palette.forceNormal },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find(demo => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="斜面受力分析">
+            物体在斜面上受到重力G、支持力N和摩擦力f的作用。重力可分解为平行于斜面的下滑分力Gx和垂直于斜面的分力Gy。
+          </PrincipleCard>
+          <PrincipleCard title="摩擦力特性">
+            静摩擦力f随倾角增大而增大，最大静摩擦力f_max = μN。当Gx &gt; f_max时，物体开始滑动，摩擦力变为滑动摩擦力f = μN。
+          </PrincipleCard>
+          <PrincipleCard title="临界条件">
+            临界倾角θ_c满足tanθ_c = μ。当θ &lt; θ_c时物体静止，θ &gt; θ_c时物体下滑。摩擦系数μ越大，临界倾角越大。
+          </PrincipleCard>
+        </>
+      }
     >
+      <DemoMain>
       <SimulationCanvas svgRef={svgRef} viewBox="0 0 700 500">
         <div className={`absolute top-4 left-4 p-2 rounded text-sm font-bold ${
             status.includes("下滑") ? "bg-red-100 text-red-700" : "bg-white/90 text-slate-700"
@@ -325,7 +344,9 @@ const FrictionInclinedPlane: React.FC = () => {
             {status}
         </div>
       </SimulationCanvas>
-      
+        <KpiBar items={kpiItems} />
+      </DemoMain>
+
       <DemoSidebar>
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">实验控制</h3>
@@ -356,23 +377,8 @@ const FrictionInclinedPlane: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
+          <h3 className="font-semibold text-lg">分量明细</h3>
           <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3 text-sm">
-            <PrincipleCard title="斜面受力分析">
-              物体在斜面上受到重力G、支持力N和摩擦力f的作用。重力可分解为平行于斜面的下滑分力Gx和垂直于斜面的分力Gy。
-            </PrincipleCard>
-            <PrincipleCard title="摩擦力特性">
-              静摩擦力f随倾角增大而增大，最大静摩擦力f_max = μN。当Gx &gt; f_max时，物体开始滑动，摩擦力变为滑动摩擦力f = μN。
-            </PrincipleCard>
-            <PrincipleCard title="临界条件">
-              临界倾角θ_c满足tanθ_c = μ。当θ &lt; θ_c时物体静止，θ &gt; θ_c时物体下滑。摩擦系数μ越大，临界倾角越大。
-            </PrincipleCard>
-          </div>
         </div>
       </DemoSidebar>
     </DemoPage>

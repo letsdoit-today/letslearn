@@ -5,9 +5,10 @@ import { useSEO } from '@/hooks/useSEO';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { calculateThinLens, imageTypeText } from '@/lib/physics/lens';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
-import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
@@ -234,19 +235,35 @@ const ConvexLensSim: React.FC = () => {
     updateScene(300);
   };
 
-  const dataItems: DataItem[] = [
+  const kpiItems: KpiItem[] = [
     { label: '物距 u', value: u.toFixed(0) },
     { label: '像距 v', value: Math.abs(data.v) === Infinity ? "∞" : Math.round(data.v).toString() },
     { label: '放大率 m', value: Math.abs(data.m) === Infinity ? "∞" : data.m.toFixed(2) },
-    { label: '成像性质', value: data.typeText, highlight: true },
+    { label: '成像性质', value: data.typeText },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find(demo => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="光线传播路径" variant="slate">
+            平行于主光轴的光线通过凸透镜后汇聚在焦点；通过光心的光线方向不变。
+          </PrincipleCard>
+          <PrincipleCard title="成像特性" variant="slate">
+            物距大于焦距时形成倒立实像，物距小于焦距时形成正立虚像，物距等于焦距时不成像。
+          </PrincipleCard>
+          <PrincipleCard title="凸透镜成像规律" variant="slate">
+            凸透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为焦距，u为物距，v为像距。
+          </PrincipleCard>
+        </>
+      }
     >
-      <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+      <DemoMain>
+        <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+        <KpiBar items={kpiItems} />
+      </DemoMain>
 
       <DemoSidebar>
         <div className="space-y-4">
@@ -271,26 +288,6 @@ const ConvexLensSim: React.FC = () => {
             }}
             formatValue={(v) => v.toFixed(0)}
           />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
-          <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3">
-            <PrincipleCard title="光线传播路径" variant="slate">
-              平行于主光轴的光线通过凸透镜后汇聚在焦点；通过光心的光线方向不变。
-            </PrincipleCard>
-            <PrincipleCard title="成像特性" variant="slate">
-              物距大于焦距时形成倒立实像，物距小于焦距时形成正立虚像，物距等于焦距时不成像。
-            </PrincipleCard>
-            <PrincipleCard title="凸透镜成像规律" variant="slate">
-              凸透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为焦距，u为物距，v为像距。
-            </PrincipleCard>
-          </div>
         </div>
       </DemoSidebar>
     </DemoPage>

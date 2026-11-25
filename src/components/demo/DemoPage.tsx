@@ -17,24 +17,30 @@ export function SimulationCanvas({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
-      {svgRef ? <svg ref={svgRef} viewBox={viewBox} className="w-full h-auto" /> : null}
+    <div data-demo-canvas className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
+      {svgRef ? (
+        <svg ref={svgRef} viewBox={viewBox} className="w-full h-auto lg:max-h-[calc(100vh_-_9rem)]" />
+      ) : null}
       {children}
     </div>
   );
 }
 
 export function DemoSidebar({ children }: { children: ReactNode }) {
-  return <div className="w-full lg:w-80 space-y-6">{children}</div>;
+  return <div data-demo-sidebar className="w-full lg:w-80 space-y-6">{children}</div>;
 }
 
 export function DemoPage({
   title,
   description,
+  principles,
+  reference,
   children,
 }: {
   title: string;
   description: string;
+  principles?: ReactNode;
+  reference?: ReactNode;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -48,8 +54,14 @@ export function DemoPage({
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col lg:flex-row gap-6">
-          {children}
+        <CardContent className="space-y-6">
+          {principles ? (
+            <div className="grid gap-3 sm:grid-cols-2">{principles}</div>
+          ) : null}
+          {reference ? (
+            <div className="text-xs text-muted-foreground">{reference}</div>
+          ) : null}
+          <div className="flex flex-col lg:flex-row gap-6">{children}</div>
         </CardContent>
       </Card>
     </div>

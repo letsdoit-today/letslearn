@@ -4,9 +4,10 @@ import { useSEO } from '@/hooks/useSEO';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { toRad, toDeg, snellFresnel } from '@/lib/physics/refraction';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
-import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
@@ -226,19 +227,38 @@ const AirWaterRefraction: React.FC = () => {
     updateScene(45);
   };
 
-  const dataItems: DataItem[] = [
+  const kpiItems: KpiItem[] = [
     { label: '入射角 θᵢ', value: `${data.thetaI.toFixed(1)}°` },
     { label: '折射角 θᵗ', value: `${data.thetaT.toFixed(1)}°` },
-    { label: '反射比 R', value: `${data.R.toFixed(3)}`, color: palette.ray },
-    { label: '透射比 T', value: `${data.T.toFixed(3)}`, color: palette.ray },
+    { label: '反射比 R', value: data.R.toFixed(3), color: palette.ray },
+    { label: '透射比 T', value: data.T.toFixed(3), color: palette.ray },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find(demo => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="折射率特性">
+            折射率n表示光在真空中的速度与在介质中速度的比值。
+            空气折射率约为1.0，水折射率约为1.33，玻璃折射率约为1.5。
+          </PrincipleCard>
+          <PrincipleCard title="斯涅尔定律">
+            光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵗ。
+            当光从光疏介质进入光密介质时，折射角小於入射角。
+          </PrincipleCard>
+          <PrincipleCard title="菲涅尔公式">
+            描述光在界面上的反射和透射比例，计算反射率R和透射率T。
+            当入射角接近90°时，反射率趋近于1，发生全反射现象。
+          </PrincipleCard>
+        </>
+      }
     >
-      <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+      <DemoMain>
+        <SimulationCanvas svgRef={svgRef} viewBox="0 0 800 500" />
+        <KpiBar items={kpiItems} />
+      </DemoMain>
 
       <DemoSidebar>
         <div className="space-y-4">
@@ -287,29 +307,6 @@ const AirWaterRefraction: React.FC = () => {
             }}
             formatValue={(v) => v.toFixed(2)}
           />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
-          <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3">
-            <PrincipleCard title="折射率特性">
-              折射率n表示光在真空中的速度与在介质中速度的比值。
-              空气折射率约为1.0，水折射率约为1.33，玻璃折射率约为1.5。
-            </PrincipleCard>
-            <PrincipleCard title="斯涅尔定律">
-              光线在不同介质中传播时，入射角θᵢ和折射角θᵗ满足关系：n₁·sinθᵢ = n₂·sinθᵗ。
-              当光从光疏介质进入光密介质时，折射角小於入射角。
-            </PrincipleCard>
-            <PrincipleCard title="菲涅尔公式">
-              描述光在界面上的反射和透射比例，计算反射率R和透射率T。
-              当入射角接近90°时，反射率趋近于1，发生全反射现象。
-            </PrincipleCard>
-          </div>
         </div>
       </DemoSidebar>
     </DemoPage>

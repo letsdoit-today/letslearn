@@ -6,9 +6,10 @@ import { useSVGScene } from '@/hooks/useSVGScene';
 import { useSimulation } from '@/hooks/useSimulation';
 import { Button } from '@/components/ui/button';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
-import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
@@ -406,7 +407,7 @@ const PendulumOscillation: React.FC = () => {
     setParams((prev) => ({ ...prev, ...patch }));
   };
 
-  const dataItems: DataItem[] = [
+  const kpiItems: KpiItem[] = [
     { label: '简谐周期 T₀ = 2π√(L/g)', value: `${period.t0.toFixed(3)} s` },
     {
       label: '精确周期 T（椭圆积分）',
@@ -416,26 +417,35 @@ const PendulumOscillation: React.FC = () => {
     {
       label: '相对偏差 (T − T₀)/T₀',
       value: `${period.deviation >= 0 ? '+' : ''}${(period.deviation * 100).toFixed(1)}%`,
-      highlight: true,
     },
     { label: '每周期滞后', value: `${(period.lagPerPeriod * 1000).toFixed(0)} ms` },
-    { label: '摆长 L', value: `${params.length.toFixed(2)} m` },
-    { label: '摆球质量 m', value: `${params.mass.toFixed(1)} kg` },
-    { label: '小摆振幅', value: `${SMALL_THETA0_DEG}°` },
-    { label: '大摆振幅', value: `${params.theta0Deg}°` },
-    {
-      label: '总机械能 E',
-      value: `${totalEnergy.toFixed(2)} J`,
-      color: palette.forceTension,
-      highlight: true,
-    },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find((demo) => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="周期公式">
+            T = 2π√(L/g)。周期只由摆长 L 和重力加速度 g 决定，
+            <strong>与摆球质量无关</strong>，小角度下也近似与振幅无关。
+          </PrincipleCard>
+          <PrincipleCard title="等时性只在 θ 小时成立">
+            简谐近似 sinθ ≈ θ 仅在小角度下成立。θ₀ 越大，精确周期越长：
+            60° 时慢 7.3%，每周期滞后约 0.15 s，几个周期后两摆就明显错拍。
+          </PrincipleCard>
+          <PrincipleCard title="能量守恒">
+            摆球只受重力和绳张力，张力始终垂直于速度方向、不做功，因此机械能守恒。
+            最低点动能最大、势能为零，最高点动能最小、势能最大。
+          </PrincipleCard>
+          <PrincipleCard title="张力随位置变化" variant="slate">
+            T = mg cosθ + mv²/L。最低点 cosθ = 1 且速度最大，张力达到峰值；越靠近最高点张力越小。
+          </PrincipleCard>
+        </>
+      }
     >
+      <DemoMain>
       <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         <div className="absolute top-4 left-4 px-3 py-2 rounded bg-slate-100 text-sm font-bold text-slate-700">
           t = {sim.time.toFixed(2)} s
@@ -459,6 +469,8 @@ const PendulumOscillation: React.FC = () => {
           </p>
         </div>
       </SimulationCanvas>
+        <KpiBar items={kpiItems} />
+      </DemoMain>
 
       <DemoSidebar>
         <div className="space-y-4">
@@ -565,32 +577,6 @@ const PendulumOscillation: React.FC = () => {
             <p className="text-xs text-muted-foreground">
               总机械能 E = {totalEnergy.toFixed(2)} J 恒定，动能与势能只在两者间来回转化。
             </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
-          <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3">
-            <PrincipleCard title="周期公式">
-              T = 2π√(L/g)。周期只由摆长 L 和重力加速度 g 决定，
-              <strong>与摆球质量无关</strong>，小角度下也近似与振幅无关。
-            </PrincipleCard>
-            <PrincipleCard title="等时性只在 θ 小时成立">
-              简谐近似 sinθ ≈ θ 仅在小角度下成立。θ₀ 越大，精确周期越长：
-              60° 时慢 7.3%，每周期滞后约 0.15 s，几个周期后两摆就明显错拍。
-            </PrincipleCard>
-            <PrincipleCard title="能量守恒">
-              摆球只受重力和绳张力，张力始终垂直于速度方向、不做功，因此机械能守恒。
-              最低点动能最大、势能为零，最高点动能最小、势能最大。
-            </PrincipleCard>
-            <PrincipleCard title="张力随位置变化" variant="slate">
-              T = mg cosθ + mv²/L。最低点 cosθ = 1 且速度最大，张力达到峰值；越靠近最高点张力越小。
-            </PrincipleCard>
           </div>
         </div>
       </DemoSidebar>

@@ -6,6 +6,8 @@ import { useSimulation } from '@/hooks/useSimulation';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { simulateFallingBall, type FallingBallState } from '@/lib/physics/fallingBall';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
@@ -149,21 +151,41 @@ const FallingBall: React.FC = () => {
     const currentFrame = sim.currentFrame ?? { t: 0, y: 50, v: 0, G: 0, Fb: 0, Fd: 0, N: 0, Fnet: 0 };
     const currentH = (waterLevel - currentFrame.y) / pixelsPerMeter;
 
-    const dataItems: DataItem[] = [
+    const kpiItems: KpiItem[] = [
         { label: '高度 h', value: `${currentH.toFixed(2)} m` },
         { label: '速度 v', value: `${currentFrame.v.toFixed(2)} m/s` },
+        { label: '阻力 Fd', value: `${Math.abs(currentFrame.Fd).toFixed(2)} N`, color: palette.forceDrag },
+        { label: '净力 Fnet', value: `${currentFrame.Fnet.toFixed(2)} N` },
+    ];
+
+    const dataItems: DataItem[] = [
         { label: '重力 G', value: `${currentFrame.G.toFixed(2)} N`, color: palette.forceGravity },
         { label: '浮力 Fb', value: `${currentFrame.Fb.toFixed(2)} N`, color: palette.forceBuoyancy },
-        { label: '阻力 Fd', value: `${Math.abs(currentFrame.Fd).toFixed(2)} N`, color: palette.forceDrag },
         { label: '支持力 N', value: `${currentFrame.N.toFixed(2)} N`, color: palette.forceNormal },
-        { label: '净力 Fnet', value: `${currentFrame.Fnet.toFixed(2)} N`, highlight: true },
     ];
 
     return (
         <DemoPage
             title={name}
             description={Demos.find(demo => demo.name === name)?.description || ''}
+            principles={
+                <>
+                    <PrincipleCard title="牛顿第二定律">
+                        物体运动遵循牛顿第二定律 F = ma，其中F为净力，m为质量，a为加速度。
+                        球体下落过程中，净力Fnet = G - Fb - Fd - N决定其加速度方向。
+                    </PrincipleCard>
+                    <PrincipleCard title="阿基米德浮力原理">
+                        物体在液体中受到的浮力等于其排开液体的重量，Fb = ρ液体 × g × V排。
+                        当球体完全浸沒时，V排等于球体体积；部分浸沒时，V排为浸沒部分的体积。
+                    </PrincipleCard>
+                    <PrincipleCard title="流体阻力特性">
+                        球体在液体中运动时受到阻力Fd = ½ × Cd × ρ液体 × A × v²，
+                        其中Cd为阻力系数，A为截面面积，v为相对速度。阻力方向与运动方向相反。
+                    </PrincipleCard>
+                </>
+            }
         >
+            <DemoMain>
             <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height + bottomMargin}`}>
                 {/* Legend Overlay */}
                 <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
@@ -173,6 +195,15 @@ const FallingBall: React.FC = () => {
                     <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceNormal }}></span> 支持力 N</div>
                 </div>
             </SimulationCanvas>
+                <ParamSlider
+                    label="时间 (t)"
+                    value={sim.time}
+                    min={0} max={sim.maxTime} step={0.01}
+                    onValueChange={(v) => { sim.pause(); sim.setTime(v); }}
+                    formatValue={(v) => `${v.toFixed(2)} s`}
+                />
+                <KpiBar items={kpiItems} />
+            </DemoMain>
 
             <DemoSidebar>
                 <div className="space-y-4">
@@ -206,37 +237,12 @@ const FallingBall: React.FC = () => {
                             onValueChange={setRadius}
                             formatValue={(v) => `${v} m`}
                         />
-                        <ParamSlider
-                            label="时间 (t)"
-                            value={sim.time}
-                            min={0} max={sim.maxTime} step={0.01}
-                            onValueChange={(v) => { sim.pause(); sim.setTime(v); }}
-                            formatValue={(v) => `${v.toFixed(2)} s`}
-                        />
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">实时数据</h3>
+                    <h3 className="font-semibold text-lg">力的明细</h3>
                     <DataPanel items={dataItems} />
-                </div>
-
-                <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">原理说明</h3>
-                    <div className="space-y-3">
-                        <PrincipleCard title="牛顿第二定律">
-                            物体运动遵循牛顿第二定律 F = ma，其中F为净力，m为质量，a为加速度。
-                            球体下落过程中，净力Fnet = G - Fb - Fd - N决定其加速度方向。
-                        </PrincipleCard>
-                        <PrincipleCard title="阿基米德浮力原理">
-                            物体在液体中受到的浮力等于其排开液体的重量，Fb = ρ液体 × g × V排。
-                            当球体完全浸沒时，V排等于球体体积；部分浸沒时，V排为浸沒部分的体积。
-                        </PrincipleCard>
-                        <PrincipleCard title="流体阻力特性">
-                            球体在液体中运动时受到阻力Fd = ½ × Cd × ρ液体 × A × v²，
-                            其中Cd为阻力系数，A为截面面积，v为相对速度。阻力方向与运动方向相反。
-                        </PrincipleCard>
-                    </div>
                 </div>
             </DemoSidebar>
         </DemoPage>

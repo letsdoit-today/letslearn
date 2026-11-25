@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useSEO } from '@/hooks/useSEO';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { DemoMain } from '@/components/demo/DemoMain';
+import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
-import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
 import Demos, { siteUrl } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
@@ -54,17 +55,31 @@ const EyeSim: React.FC = () => {
     };
   }, [objectDistance]);
 
-  const dataItems: DataItem[] = [
+  const kpiItems: KpiItem[] = [
     { label: '物体距离', value: `${objectDistance.toFixed(0)} px` },
     { label: '晶状体厚度', value: accommodation.thickness.toFixed(1) },
-    { label: '调节状态', value: accommodation.isNear ? '近距离调节 (睫状肌收缩)' : '远距离调节 (睫状肌舒张)', highlight: true },
+    { label: '调节状态', value: accommodation.isNear ? '近距调节' : '远距调节', hint: accommodation.isNear ? '睫状肌收缩' : '睫状肌舒张' },
   ];
 
   return (
     <DemoPage
       title={name}
       description={Demos.find(demo => demo.name === name)?.description || ''}
+      principles={
+        <>
+          <PrincipleCard title="1. 物体位置" variant="slate">
+            当物体靠近眼睛时，进入眼球的光线发散程度更高。
+          </PrincipleCard>
+          <PrincipleCard title="2. 晶状体变化" variant="slate">
+            睫状肌收缩，晶状体依靠弹性变凸（变厚），从而增加折光能力。
+          </PrincipleCard>
+          <PrincipleCard title="3. 完美成像" variant="slate">
+            折射后的光线准确汇聚在视网膜上，形成清晰的倒立实像。
+          </PrincipleCard>
+        </>
+      }
     >
+      <DemoMain>
       <SimulationCanvas>
         <svg viewBox="0 0 1000 500" className="w-full h-auto">
           {/* 背景参考线 */}
@@ -141,6 +156,8 @@ const EyeSim: React.FC = () => {
           <text x={LENS_X + 25} y="140" fill={accommodation.isNear ? palette.statusActive : palette.reference} fontSize="12">睫状肌</text>
         </svg>
       </SimulationCanvas>
+        <KpiBar items={kpiItems} />
+      </DemoMain>
 
       <DemoSidebar>
         <div className="space-y-4">
@@ -160,26 +177,6 @@ const EyeSim: React.FC = () => {
               </div>
             }
           />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">实时数据</h3>
-          <DataPanel items={dataItems} />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">原理说明</h3>
-          <div className="space-y-3">
-            <PrincipleCard title="1. 物体位置" variant="slate">
-              当物体靠近眼睛时，进入眼球的光线发散程度更高。
-            </PrincipleCard>
-            <PrincipleCard title="2. 晶状体变化" variant="slate">
-              睫状肌收缩，晶状体依靠弹性变凸（变厚），从而增加折光能力。
-            </PrincipleCard>
-            <PrincipleCard title="3. 完美成像" variant="slate">
-              折射后的光线准确汇聚在视网膜上，形成清晰的倒立实像。
-            </PrincipleCard>
-          </div>
         </div>
       </DemoSidebar>
     </DemoPage>
