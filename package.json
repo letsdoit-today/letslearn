@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:prerender": "tsc && vite build && node scripts/prerender.js",
+    "sitemap": "node scripts/gen-sitemap.js",
+    "sitemap:check": "node scripts/gen-sitemap.js --check",
+    "build": "tsc && node scripts/gen-sitemap.js && vite build",
+    "build:prerender": "tsc && node scripts/gen-sitemap.js && vite build && node scripts/prerender.js",
     "verify:layout": "node scripts/verify-layout.mjs",
     "preview": "vite preview"
   },

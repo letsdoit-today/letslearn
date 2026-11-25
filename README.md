@@ -3,9 +3,10 @@
 To add a new demo to this project, follow these steps:
 
 -  Create a new demo file in the `src/demos/` directory.
--  Add the demo metadata (name / slug / path / description / keywords) to `src/lib/demos.json`. This file is the single source of truth: both the router and the prerender script derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes.
+-  Add the demo metadata (name / slug / path / description / keywords) to `src/lib/demos.json`. This file is the single source of truth: the router, the prerender script and the sitemap generator all derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes.
 -  Add an icon mapping for the new `slug` in `src/lib/demoIcons.tsx`.
 -  Register the component in the `demoComponents` map in `App.tsx`.
+-  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
 -  Update the roadmap section of the `README.md` file with the new demo.
 
 
@@ -25,8 +26,8 @@ PUPPETEER_EXECUTABLE_PATH=C:\\Program Files\\Google\\Chrome\\Application\\chrome
 光学 (4/6)  ← 已接近饱和，边际价值低
   [x] 折射  [x] 凸透镜  [x] 凹透镜  [x] 人眼
 
-电磁学 (1)  ← 最大空白
-  [ ] 库仑/电场   [ ] 磁场/洛伦兹   [x] 电磁感应
+电磁学 (2)
+  [ ] 库仑/电场   [ ] 磁场/洛伦兹   [x] 电磁感应  [x] 磁铁插入/拔出线圈
 
 波动 (0)     [ ] 干涉   [ ] 多普勒   [ ] 驻波
 热学 (0)     [ ] 理想气体 [ ] 热传导

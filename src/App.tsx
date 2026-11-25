@@ -11,6 +11,7 @@ import EyeSim from './demos/EyeSim';
 import LeverBalance from './demos/LeverBalance';
 import PendulumOscillation from './demos/PendulumOscillation';
 import ElectromagneticInduction from './demos/ElectromagneticInduction';
+import MagnetCoilInduction from './demos/MagnetCoilInduction';
 import Demos from './lib/Meta';
 
 const demoComponents: Record<string, ComponentType> = {
@@ -23,6 +24,7 @@ const demoComponents: Record<string, ComponentType> = {
   'lever-balance': LeverBalance,
   'pendulum-oscillation': PendulumOscillation,
   'electromagnetic-induction': ElectromagneticInduction,
+  'magnet-coil-induction': MagnetCoilInduction,
 };
 
 function App() {

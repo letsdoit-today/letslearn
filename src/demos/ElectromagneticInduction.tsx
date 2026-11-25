@@ -269,7 +269,7 @@ const ElectromagneticInduction: React.FC = () => {
 
       if (perimeter > 0 && Math.abs(frame.current) > 1e-9) {
         const speed = 40 + 160 * clamp(Math.abs(frame.current) / Math.max(iRef, 1e-9), 0, 1.5);
-        flowPhaseRef.current += dir * wallDt * speed;
+        flowPhaseRef.current -= dir * wallDt * speed;
         let phase = flowPhaseRef.current % perimeter;
         if (phase < 0) phase += perimeter;
         ctx.dots.forEach((dot, k) => {
