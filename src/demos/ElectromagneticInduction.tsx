@@ -5,6 +5,7 @@ import { useSVGScene } from '@/hooks/useSVGScene';
 import { useSimulation } from '@/hooks/useSimulation';
 import { Button } from '@/components/ui/button';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { CanvasLegend } from '@/components/demo/CanvasLegend';
 import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
@@ -671,37 +672,23 @@ const ElectromagneticInduction: React.FC = () => {
       }
     >
       <DemoMain>
-      <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
-        <div className="absolute top-4 left-4 px-3 py-2 rounded bg-slate-100 text-sm font-bold text-slate-700">
-          <span>t = {fmtTime(Math.min(sim.time, sim.maxTime))}</span>
-          <span className="ml-3 text-xs font-medium text-slate-500">
-            {MODES.find((m) => m.id === params.mode)?.label}
-          </span>
-        </div>
-
-        <div className="absolute top-4 right-4 bg-white/90 p-2 rounded shadow text-xs space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 block" style={{ backgroundColor: palette.field }} />
-            磁场 B（× 垂直纸面向里）
+        <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
+          <div className="absolute top-4 left-4 px-3 py-2 rounded bg-slate-100 text-sm font-bold text-slate-700">
+            <span>t = {fmtTime(Math.min(sim.time, sim.maxTime))}</span>
+            <span className="ml-3 text-xs font-medium text-slate-500">
+              {MODES.find((m) => m.id === params.mode)?.label}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 block" style={{ backgroundColor: palette.current }} />
-            感应电流 I
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 block" style={{ backgroundColor: palette.statusActive }} />
-            速度 v
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 block" style={{ backgroundColor: palette.forceComponent }} />
-            安培力 F_A
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 block" style={{ backgroundColor: palette.emf }} />
-            电动势 ε / 外力 F_外
-          </div>
-        </div>
-      </SimulationCanvas>
+        </SimulationCanvas>
+        <CanvasLegend
+          items={[
+            { label: '磁场 B（× 垂直纸面向里）', color: palette.field },
+            { label: '感应电流 I', color: palette.current },
+            { label: '速度 v', color: palette.statusActive },
+            { label: '安培力 F_A', color: palette.forceComponent },
+            { label: '电动势 ε / 外力 F_外', color: palette.emf },
+          ]}
+        />
         <KpiBar items={kpiItems} />
       </DemoMain>
 

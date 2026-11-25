@@ -19,7 +19,7 @@ export function SimulationCanvas({
   return (
     <div data-demo-canvas className="flex-1 relative border rounded-lg overflow-hidden bg-slate-50">
       {svgRef ? (
-        <svg ref={svgRef} viewBox={viewBox} className="w-full h-auto lg:max-h-[calc(100vh_-_9rem)]" />
+        <svg ref={svgRef} viewBox={viewBox} className="w-full h-auto max-h-[calc(100vh_-_12rem)]" />
       ) : null}
       {children}
     </div>
@@ -27,7 +27,7 @@ export function SimulationCanvas({
 }
 
 export function DemoSidebar({ children }: { children: ReactNode }) {
-  return <div data-demo-sidebar className="w-full lg:w-80 space-y-6">{children}</div>;
+  return <div data-demo-sidebar className="w-full xl:w-80 space-y-6">{children}</div>;
 }
 
 export function DemoPage({
@@ -61,7 +61,7 @@ export function DemoPage({
           {reference ? (
             <div className="text-xs text-muted-foreground">{reference}</div>
           ) : null}
-          <div className="flex flex-col lg:flex-row gap-6">{children}</div>
+          <div className="flex flex-col xl:flex-row gap-6">{children}</div>
         </CardContent>
       </Card>
     </div>

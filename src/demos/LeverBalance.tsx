@@ -6,6 +6,7 @@ import { useSEO } from '@/hooks/useSEO';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { Button } from '@/components/ui/button';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { CanvasLegend } from '@/components/demo/CanvasLegend';
 import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
@@ -415,37 +416,23 @@ const LeverBalance: React.FC = () => {
       }
     >
       <DemoMain>
-      <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
-        <div
-          className={`absolute top-4 left-4 px-3 py-2 rounded text-sm font-bold ${
-            state.balanced ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-          }`}
-        >
-          {statusText}
-        </div>
-
-        <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
-          <div className="flex items-center gap-2">
-            <span
-              className="w-6 h-0.5 block"
-              style={{ backgroundColor: palette.forceComponent }}
-            />
-            力臂 L′（支点到作用线的垂距）
+        <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
+          <div
+            className={`absolute top-4 left-4 px-3 py-2 rounded text-sm font-bold ${
+              state.balanced ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+            }`}
+          >
+            {statusText}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 block" style={{ backgroundColor: palette.forceGravity }} />
-            作用力 F1
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 block" style={{ backgroundColor: palette.forceBuoyancy }} />
-            作用力 F2
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 block" style={{ backgroundColor: palette.statusActive }} />
-            力矩 M（弧形箭头）
-          </div>
-        </div>
-      </SimulationCanvas>
+        </SimulationCanvas>
+        <CanvasLegend
+          items={[
+            { label: '力臂 L′', color: palette.forceComponent },
+            { label: '作用力 F1', color: palette.forceGravity },
+            { label: '作用力 F2', color: palette.forceBuoyancy },
+            { label: '力矩 M', color: palette.statusActive },
+          ]}
+        />
         <KpiBar items={kpiItems} />
       </DemoMain>
 

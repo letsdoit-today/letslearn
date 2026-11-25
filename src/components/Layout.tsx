@@ -95,7 +95,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   });
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-dvh overflow-hidden bg-background flex">
       {/* Backdrop (mobile only) */}
       {!isDesktop && mobileOpen && (
         <div
@@ -108,7 +108,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Left Sidebar */}
       <aside 
         className={cn(
-          "border-r bg-card flex flex-col transition-all duration-300 ease-in-out overflow-hidden h-screen",
+          "border-r bg-card flex flex-col transition-all duration-300 ease-in-out overflow-hidden h-dvh",
           "fixed inset-y-0 left-0 z-50 w-64 shadow-xl",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           "md:static md:inset-auto md:z-auto md:shadow-none md:translate-x-0",
@@ -223,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-3 sm:p-6 overflow-auto">
+        <div data-shell-content className="flex-1 p-3 sm:p-6 overflow-auto">
           {children}
         </div>
       </main>

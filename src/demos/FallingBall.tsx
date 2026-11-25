@@ -6,6 +6,7 @@ import { useSimulation } from '@/hooks/useSimulation';
 import { useSVGScene } from '@/hooks/useSVGScene';
 import { simulateFallingBall, type FallingBallState } from '@/lib/physics/fallingBall';
 import { DemoPage, SimulationCanvas, DemoSidebar } from '@/components/demo/DemoPage';
+import { CanvasLegend } from '@/components/demo/CanvasLegend';
 import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
@@ -186,15 +187,15 @@ const FallingBall: React.FC = () => {
             }
         >
             <DemoMain>
-            <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height + bottomMargin}`}>
-                {/* Legend Overlay */}
-                <div className="absolute top-4 right-4 bg-white/90 p-3 rounded shadow text-sm space-y-1">
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceGravity }}></span> 重力 G</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceBuoyancy }}></span> 浮力 Fb</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceDrag }}></span> 阻力 Fd</div>
-                    <div className="flex items-center gap-2"><span className="w-3 h-3 block" style={{ backgroundColor: palette.forceNormal }}></span> 支持力 N</div>
-                </div>
-            </SimulationCanvas>
+                <SimulationCanvas svgRef={svgRef} viewBox={`0 0 ${width} ${height + bottomMargin}`} />
+                <CanvasLegend
+                    items={[
+                        { label: '重力 G', color: palette.forceGravity },
+                        { label: '浮力 Fb', color: palette.forceBuoyancy },
+                        { label: '阻力 Fd', color: palette.forceDrag },
+                        { label: '支持力 N', color: palette.forceNormal },
+                    ]}
+                />
                 <ParamSlider
                     label="时间 (t)"
                     value={sim.time}

@@ -13,9 +13,12 @@ const BASE_URL = `http://localhost:${PORT}`;
 const TOLERANCE = 8;
 
 const VIEWPORTS = [
+  { name: '1024x768', width: 1024, height: 768 },
   { name: '1366x768', width: 1366, height: 768 },
   { name: '1920x1080', width: 1920, height: 1080 },
 ];
+
+const OVERLAY_AREA_LIMIT = 0.25;
 
 const demosPath = path.join(__dirname, '..', 'src', 'lib', 'demos.json');
 const demos = JSON.parse(fs.readFileSync(demosPath, 'utf-8'));
@@ -57,10 +60,12 @@ function resolveExecutablePath() {
 
 async function measure(page) {
   return page.evaluate(() => {
+    const shell = document.querySelector('[data-shell-content]');
     const workspace = document.querySelector('[data-demo-workspace]');
     const sidebar = document.querySelector('[data-demo-sidebar]');
     const kpi = document.querySelector('[data-demo-kpi]');
     const canvas = document.querySelector('[data-demo-canvas]');
+    const legend = document.querySelector('[data-demo-legend]');
     const box = (el) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
@@ -73,14 +78,35 @@ async function measure(page) {
         height: r.height,
       };
     };
+    const overlays = canvas
+      ? Array.from(canvas.querySelectorAll('*'))
+          .filter((el) => {
+            const position = window.getComputedStyle(el).position;
+            return position === 'absolute' || position === 'fixed';
+          })
+          .map((el) => {
+            const r = el.getBoundingClientRect();
+            return {
+              label: (el.textContent || '').trim().slice(0, 40),
+              width: r.width,
+              height: r.height,
+            };
+          })
+      : [];
+    const shellBox = box(shell);
     return {
       viewportHeight: window.innerHeight,
       canvas: box(canvas),
       sidebar: box(sidebar),
       kpi: box(kpi),
-      workspaceTop: workspace ? workspace.getBoundingClientRect().top + window.scrollY : null,
-      scrollWidth: document.body.scrollWidth,
-      clientWidth: document.body.clientWidth,
+      legend: box(legend),
+      legendInsideCanvas: canvas && legend ? canvas.contains(legend) : null,
+      overlays,
+      workspaceTop:
+        workspace && shellBox ? workspace.getBoundingClientRect().top - shellBox.top : null,
+      shellScrollWidth: shell ? shell.scrollWidth : null,
+      shellClientWidth: shell ? shell.clientWidth : null,
+      documentScrollY: window.scrollY,
       nestedParagraphs: document.querySelectorAll('p p').length,
     };
   });
@@ -98,7 +124,7 @@ async function checkRoute(page, route, viewport, { foldedNav }) {
   const failures = [];
   await page.setViewport({ width: viewport.width, height: viewport.height });
 
-    await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle0', timeout: 30000 });
+  await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle0', timeout: 30000 });
   await page.waitForFunction(() => window.__PRERENDER_READY__ === true, { timeout: 15000 });
 
   if (foldedNav) {
@@ -114,6 +140,7 @@ async function checkRoute(page, route, viewport, { foldedNav }) {
   const label = `${route} @ ${viewport.name}${foldedNav ? ' (折叠导航)' : ''}`;
 
   const vh = m.viewportHeight;
+  const rowLayout = viewport.width >= 1280;
   if (!m.canvas) failures.push(`${label}: 未找到画布元素`);
   if (!m.kpi) failures.push(`${label}: 未找到 KPI 条`);
   if (!m.sidebar) failures.push(`${label}: 未找到侧栏`);
@@ -121,27 +148,71 @@ async function checkRoute(page, route, viewport, { foldedNav }) {
   if (m.canvas && m.canvas.bottom > vh + TOLERANCE) {
     failures.push(`${label}: 画布底边 ${Math.round(m.canvas.bottom)} 超出视口 ${vh}`);
   }
-  if (m.sidebar && m.sidebar.bottom > vh + TOLERANCE) {
-    failures.push(`${label}: 侧栏底边 ${Math.round(m.sidebar.bottom)} 超出视口 ${vh}`);
-  }
   if (m.kpi && m.kpi.bottom > vh + TOLERANCE) {
     failures.push(`${label}: KPI 条底边 ${Math.round(m.kpi.bottom)} 超出视口 ${vh}`);
   }
-  if (m.scrollWidth > m.clientWidth) {
-    failures.push(`${label}: 横向溢出 scrollWidth=${m.scrollWidth} clientWidth=${m.clientWidth}`);
+  if (rowLayout) {
+    if (m.sidebar && m.sidebar.bottom > vh + TOLERANCE) {
+      failures.push(`${label}: 侧栏底边 ${Math.round(m.sidebar.bottom)} 超出视口 ${vh}`);
+    }
+  } else if (m.sidebar && m.canvas && m.sidebar.top < m.canvas.bottom - TOLERANCE) {
+    failures.push(
+      `${label}: 侧栏未回落到画布下方（侧栏顶边 ${Math.round(m.sidebar.top)} < 画布底边 ${Math.round(
+        m.canvas.bottom,
+      )}）`,
+    );
+  }
+  if (m.shellScrollWidth !== null && m.shellScrollWidth > m.shellClientWidth) {
+    failures.push(
+      `${label}: 内容区横向溢出 scrollWidth=${m.shellScrollWidth} clientWidth=${m.shellClientWidth}`,
+    );
+  }
+  if (m.documentScrollY !== 0) {
+    failures.push(`${label}: 文档根元素发生滚动 scrollY=${m.documentScrollY}，滚动应只发生在内容区`);
   }
   if (m.nestedParagraphs > 0) {
     failures.push(`${label}: 存在 ${m.nestedParagraphs} 处段落嵌套段落`);
   }
 
+  if (m.legendInsideCanvas) {
+    failures.push(`${label}: 图例位于画布容器内部，应作为画布下方的图注渲染`);
+  }
+  if (m.legend && m.canvas && m.legend.top < m.canvas.bottom - TOLERANCE) {
+    failures.push(
+      `${label}: 图例顶边 ${Math.round(m.legend.top)} 与画布底边 ${Math.round(
+        m.canvas.bottom,
+      )} 重叠`,
+    );
+  }
+
+  if (m.canvas) {
+    const canvasArea = m.canvas.width * m.canvas.height;
+    for (const overlay of m.overlays) {
+      const ratio = canvasArea > 0 ? (overlay.width * overlay.height) / canvasArea : 0;
+      if (ratio > OVERLAY_AREA_LIMIT) {
+        failures.push(
+          `${label}: 画布浮层「${overlay.label}」尺寸 ${Math.round(overlay.width)}x${Math.round(
+            overlay.height,
+          )} 占画布面积 ${(ratio * 100).toFixed(1)}%，超过 ${
+            OVERLAY_AREA_LIMIT * 100
+          }% 上限`,
+        );
+      }
+    }
+  }
+
   const band = m.workspaceTop === null ? null : Math.max(
     m.canvas ? m.canvas.height : 0,
-    m.sidebar ? m.sidebar.height : 0,
+    rowLayout && m.sidebar ? m.sidebar.height : 0,
   );
   console.log(
-    `   ${label}: 画布 ${m.canvas ? Math.round(m.canvas.height) : '-'}px, 侧栏 ${
+    `   ${label}: 画布 ${m.canvas ? `${Math.round(m.canvas.width)}x${Math.round(m.canvas.height)}` : '-'}px, 侧栏 ${
       m.sidebar ? Math.round(m.sidebar.height) : '-'
-    }px, KPI ${m.kpi ? Math.round(m.kpi.height) : '-'}px, band ${band === null ? '-' : Math.round(band)}px, 视口 ${vh}px`,
+    }px, KPI ${m.kpi ? Math.round(m.kpi.height) : '-'}px, 图注 ${
+      m.legend ? Math.round(m.legend.height) : '-'
+    }px, 浮层 ${m.overlays.length} 个, band ${band === null ? '-' : Math.round(band)}px, 偏移 ${
+      m.workspaceTop === null ? '-' : Math.round(m.workspaceTop)
+    }px, 内容区 ${m.shellClientWidth ?? '-'}px, 视口 ${vh}px`,
   );
 
   return failures;
@@ -177,9 +248,10 @@ async function main() {
       }
     }
 
-    await page.setViewport({ width: 1366, height: 768 });
-    for (const route of routes) {
-      failures.push(...(await checkRoute(page, route, VIEWPORTS[0], { foldedNav: true })));
+    for (const viewport of VIEWPORTS) {
+      for (const route of routes) {
+        failures.push(...(await checkRoute(page, route, viewport, { foldedNav: true })));
+      }
     }
 
     await browser.close();
