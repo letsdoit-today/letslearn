@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Beaker, Triangle, Waves, Glasses, EyeIcon, FlaskConical, Scale, Gauge, Magnet, Zap, TestTubes } from 'lucide-react';
+import { Beaker, Triangle, Waves, Glasses, EyeIcon, FlaskConical, Scale, Gauge, Magnet, Zap, TestTubes, FlipHorizontal } from 'lucide-react';
 
 const iconMap: Record<string, ComponentType<{ className?: string }>> = {
   'falling-ball': Beaker,
@@ -13,6 +13,7 @@ const iconMap: Record<string, ComponentType<{ className?: string }>> = {
   'electromagnetic-induction': Magnet,
   'magnet-coil-induction': Zap,
   'solubility-curve': TestTubes,
+  'plane-mirror-imaging': FlipHorizontal,
 };
 
 const fallbackIcon: ComponentType<{ className?: string }> = FlaskConical;

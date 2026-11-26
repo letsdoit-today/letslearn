@@ -6,73 +6,79 @@
     xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
     <url>
         <loc>https://learn.letsdoit.today/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/falling-ball/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/friction-inclined-plane/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/air-water-refraction/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/convex-lens/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/concave-lens/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/eye-simulation/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/lever-balance/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/pendulum-oscillation/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/electromagnetic-induction/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/magnet-coil-induction/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://learn.letsdoit.today/solubility-curve/</loc>
-        <lastmod>2026-11-25T16:00:48.000Z</lastmod>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://learn.letsdoit.today/plane-mirror-imaging/</loc>
+        <lastmod>2026-11-26T02:13:21.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>

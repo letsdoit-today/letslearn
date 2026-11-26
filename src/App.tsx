@@ -13,6 +13,7 @@ import PendulumOscillation from './demos/PendulumOscillation';
 import ElectromagneticInduction from './demos/ElectromagneticInduction';
 import MagnetCoilInduction from './demos/MagnetCoilInduction';
 import SolubilityCurve from './demos/SolubilityCurve';
+import PlaneMirror from './demos/PlaneMirror';
 import Demos from './lib/Meta';
 
 const demoComponents: Record<string, ComponentType> = {
@@ -27,6 +28,7 @@ const demoComponents: Record<string, ComponentType> = {
   'electromagnetic-induction': ElectromagneticInduction,
   'magnet-coil-induction': MagnetCoilInduction,
   'solubility-curve': SolubilityCurve,
+  'plane-mirror-imaging': PlaneMirror,
 };
 
 function App() {
