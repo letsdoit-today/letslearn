@@ -39,6 +39,11 @@ export const palette = {
   plankStroke: '#b45309', // amber-700 斜面木板描边
   eyeShell: '#64748b', // slate-500 眼球外壳
 
+  // 化学（颜色即语义，全站统一）
+  solution: '#14b8a6', // teal-500 溶液填充
+  crystal: '#f472b6', // pink-400 晶体 / 未溶解固体
+  curve: '#1e293b', // slate-800 溶解度曲线
+
   // 参考 / 标注
   reference: '#94a3b8', // slate-400 参考线（主光轴、法线、虚线）
   canvasText: '#334155', // slate-700 画布文字与标记点

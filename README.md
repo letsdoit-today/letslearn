@@ -7,7 +7,7 @@ To add a new demo to this project, follow these steps:
 -  Add an icon mapping for the new `slug` in `src/lib/demoIcons.tsx`.
 -  Register the component in the `demoComponents` map in `App.tsx`.
 -  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
--  Update the roadmap section of the `README.md` file with the new demo.
+-  Update the corresponding entry in `ROADMAP.md` (tick the checkbox and add the slug).
 
 
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -16,18 +16,9 @@ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 PUPPETEER_EXECUTABLE_PATH=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
 
 
-物理学习站点 —— 覆盖 vs 空白
-=====================================================
-力学 (4/6)
-  [x] 球体落液    [x] 斜面摩擦    [x] 杠杆力矩
-  [ ] 抛体运动    [x] 单摆/简谐    [ ] 碰撞动量
-  [ ] 弹簧振子    [ ] 圆周运动
+# Roadmap
 
-光学 (4/6)  ← 已接近饱和，边际价值低
-  [x] 折射  [x] 凸透镜  [x] 凹透镜  [x] 人眼
+站点要做什么、优先级如何、各章节覆盖到哪，统一记录在 [ROADMAP.md](./ROADMAP.md)。
 
-电磁学 (2)
-  [ ] 库仑/电场   [ ] 磁场/洛伦兹   [x] 电磁感应  [x] 磁铁插入/拔出线圈
-
-波动 (0)     [ ] 干涉   [ ] 多普勒   [ ] 驻波
-热学 (0)     [ ] 理想气体 [ ] 热传导
+站点覆盖小学 / 初中 / 高中的 **数学、物理、化学、地理、生物** 五科，目前仅有物理内容。
+优先级约定：**先学段、后学科 —— 初中 > 小学 > 高中**。新增 demo 后请同步更新该文件。
