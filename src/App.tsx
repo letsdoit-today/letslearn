@@ -14,6 +14,9 @@ import ElectromagneticInduction from './demos/ElectromagneticInduction';
 import MagnetCoilInduction from './demos/MagnetCoilInduction';
 import SolubilityCurve from './demos/SolubilityCurve';
 import PlaneMirror from './demos/PlaneMirror';
+import MendelInheritance from './demos/MendelInheritance';
+import PhotosynthesisRespiration from './demos/PhotosynthesisRespiration';
+import QuadraticFunctionGraph from './demos/QuadraticFunctionGraph';
 import Demos from './lib/Meta';
 
 const demoComponents: Record<string, ComponentType> = {
@@ -29,6 +32,9 @@ const demoComponents: Record<string, ComponentType> = {
   'magnet-coil-induction': MagnetCoilInduction,
   'solubility-curve': SolubilityCurve,
   'plane-mirror-imaging': PlaneMirror,
+  'mendel-inheritance': MendelInheritance,
+  'photosynthesis-respiration': PhotosynthesisRespiration,
+  'quadratic-function-graph': QuadraticFunctionGraph,
 };
 
 function App() {

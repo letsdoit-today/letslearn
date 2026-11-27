@@ -44,6 +44,24 @@ export const palette = {
   crystal: '#f472b6', // pink-400 晶体 / 未溶解固体
   curve: '#1e293b', // slate-800 溶解度曲线
 
+  // 数学（颜色即语义，全站统一）
+  mathCurve: '#1e293b', // slate-800 当前曲线 y = ax² + bx + c
+  mathReference: '#94a3b8', // slate-400 参考曲线 y = ax²
+  mathAxis: '#94a3b8', // slate-400 对称轴
+  mathVertex: '#ea580c', // orange-600 顶点
+  mathRoot: '#2563eb', // blue-600 与 x 轴交点
+
+  // 生物（颜色即语义，全站统一）
+  bioDominant: '#16a34a', // green-600 显性性状
+  bioRecessive: '#7c3aed', // violet-600 隐性性状
+  bioGamete: '#0ea5e9', // sky-500 配子
+  bioParent: '#475569', // slate-600 亲本
+  bioChloroplast: '#15803d', // green-700 叶绿体 / 光合速率
+  bioMitochondrion: '#ea580c', // orange-600 线粒体 / 呼吸速率
+  bioGasCo2: '#64748b', // slate-500 二氧化碳
+  bioGasO2: '#0284c7', // sky-600 氧气
+  bioOrganic: '#d97706', // amber-600 有机物
+
   // 参考 / 标注
   reference: '#94a3b8', // slate-400 参考线（主光轴、法线、虚线）
   canvasText: '#334155', // slate-700 画布文字与标记点

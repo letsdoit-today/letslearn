@@ -7,6 +7,7 @@ import {
   FlaskConical,
   Calculator,
   Atom,
+  Dna,
   PanelLeftClose,
   PanelLeftOpen,
   Mail,
@@ -86,6 +87,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       id: 'chemistry',
       title: '化学',
       icon: FlaskConical,
+      items: [] as Demo[]
+    },
+    {
+      id: 'biology',
+      title: '生物',
+      icon: Dna,
       items: [] as Demo[]
     }
   ];
