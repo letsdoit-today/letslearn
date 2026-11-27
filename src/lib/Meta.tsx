@@ -12,6 +12,7 @@ export type Demo = {
   description: string;
   keywords: string[];
   topic?: string;
+  title?: string;
 }
 
 export const siteUrl = 'https://learn.letsdoit.today';
@@ -33,6 +34,7 @@ const Demos: Demo[] = demos.map((demo) => ({
   description: demo.description,
   keywords: demo.keywords,
   topic: demo.topic,
+  title: demo.title,
   icon: getDemoIcon(demo.slug),
 }));
 
@@ -50,26 +52,45 @@ function buildDemoSEOUncached(slug: string) {
   const topic = demo.topic ?? '';
 
   return {
-    title: `${demo.name} - ${subject}${topic}互动演示 | ${siteName}`,
+    title: demo.title ?? `${demo.name} - ${subject}${topic}互动演示 | ${siteName}`,
     description: demo.description,
     keywords: [...demo.keywords, `${subject}学习`, `${subject}互动演示`].join(','),
     canonical: `${siteUrl}${demo.path}`,
     ogImage: `${siteUrl}/og-${demo.slug}.jpg`,
     jsonLd: {
       '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
+      '@graph': [
         {
-          '@type': 'ListItem',
-          position: 1,
-          name: '首页',
-          item: `${siteUrl}/`,
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: '首页',
+              item: `${siteUrl}/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: demo.name,
+              item: `${siteUrl}${demo.path}`,
+            },
+          ],
         },
         {
-          '@type': 'ListItem',
-          position: 2,
+          '@type': 'LearningResource',
+          '@id': `${siteUrl}${demo.path}#resource`,
           name: demo.name,
-          item: `${siteUrl}${demo.path}`,
+          description: demo.description,
+          url: `${siteUrl}${demo.path}`,
+          learningResourceType: '互动演示',
+          educationalLevel: '初中 / 高中',
+          inLanguage: 'zh-CN',
+          isAccessibleForFree: true,
+          keywords: demo.keywords.join(','),
+          about: { '@type': 'Thing', name: topic ? `${subject}·${topic}` : subject },
+          isPartOf: { '@id': `${siteUrl}/#website` },
+          publisher: { '@id': `${siteUrl}/#organization` },
         },
       ],
     },

@@ -138,6 +138,73 @@ const ConcaveLensSim: React.FC = () => {
     };
   }, [animating, animate]);
 
+  // 拖拽交互：直接拖动画面中的物体箭头改变物距（pointer 事件 + setPointerCapture）
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    svg.style.touchAction = 'none';
+
+    const toSvgPoint = (clientX: number, clientY: number) => {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: clientX, y: clientY };
+      const pt = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+      return { x: pt.x, y: pt.y };
+    };
+
+    const hitObject = (pt: { x: number; y: number }) => {
+      const objX = CONFIG.centerX - stateRef.current.u;
+      return Math.abs(pt.x - objX) <= 22
+        && pt.y >= CONFIG.centerY - 90
+        && pt.y <= CONFIG.centerY + 12;
+    };
+
+    const dragging = { current: false };
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (!hitObject(toSvgPoint(e.clientX, e.clientY))) return;
+      dragging.current = true;
+      stateRef.current.animating = false;
+      setAnimating(false);
+      e.preventDefault();
+      svg.style.cursor = 'grabbing';
+      svg.setPointerCapture(e.pointerId);
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const pt = toSvgPoint(e.clientX, e.clientY);
+      if (!dragging.current) {
+        svg.style.cursor = hitObject(pt) ? 'grab' : 'default';
+        return;
+      }
+      const nextU = Math.min(350, Math.max(10, CONFIG.centerX - pt.x));
+      stateRef.current.u = nextU;
+      setU(nextU);
+      updateScene(nextU);
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!dragging.current) return;
+      dragging.current = false;
+      if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId);
+      svg.style.cursor = hitObject(toSvgPoint(e.clientX, e.clientY)) ? 'grab' : 'default';
+    };
+
+    svg.addEventListener('pointerdown', onPointerDown);
+    svg.addEventListener('pointermove', onPointerMove);
+    svg.addEventListener('pointerup', onPointerUp);
+    svg.addEventListener('pointercancel', onPointerUp);
+
+    return () => {
+      svg.removeEventListener('pointerdown', onPointerDown);
+      svg.removeEventListener('pointermove', onPointerMove);
+      svg.removeEventListener('pointerup', onPointerUp);
+      svg.removeEventListener('pointercancel', onPointerUp);
+      svg.style.touchAction = '';
+      svg.style.cursor = '';
+    };
+  }, [updateScene]);
+
   useSVGScene(svgRef, (s) => {
     const cx = CONFIG.centerX;
     const cy = CONFIG.centerY;
@@ -260,7 +327,7 @@ const ConcaveLensSim: React.FC = () => {
             isPlaying={animating}
             onToggle={() => (animating ? handlePause() : handlePlay())}
             onReset={handleReset}
-            hoverTip={<>点击自动演示，或<p className="font-bold">手动滑动下方的物距</p>以控制物距。</>}
+            hoverTip={<>点击自动演示，或<p className="font-bold">拖动画面中的物体 / 滑动下方滑块</p>调整物距。</>}
           />
 
           <ParamSlider

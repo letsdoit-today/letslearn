@@ -75,8 +75,8 @@
 | 状态 | 条目 | 学段 | slug |
 | --- | --- | --- | --- |
 | [x] | 空气-水折射（斯涅尔/全反射/菲涅尔） | 初中 / 高中 | `air-water-refraction` |
-| [x] | 凸透镜成像 | 初中 | `convex-lens` |
-| [x] | 凹透镜成像 | 初中 | `concave-lens` |
+| [x] | 凸透镜成像规律（可拖动/动画演示） | 初中 | `convex-lens` |
+| [x] | 凹透镜成像规律（可拖动/动画演示） | 初中 | `concave-lens` |
 | [x] | 人眼视觉调节（近视/远视） | 初中 | `eye-simulation` |
 | [x] | 平面镜成像（反射定律/虚像） | 初中 + 小学 | `plane-mirror-imaging` |
 

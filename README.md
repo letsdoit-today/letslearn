@@ -3,10 +3,10 @@
 To add a new demo to this project, follow these steps:
 
 -  Create a new demo file in the `src/demos/` directory.
--  Add the demo metadata (name / slug / category / path / description / keywords / topic) to `src/lib/demos.json`. This file is the single source of truth: the router, the prerender script and the sitemap generator all derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes. `topic` is optional and only feeds the page title template (e.g. 「物理·光学」).
+-  Add the demo metadata (name / slug / category / path / description / keywords / topic) to `src/lib/demos.json`. This file is the single source of truth: the router, the prerender script and the sitemap generator all derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes. `topic` is optional and only feeds the page title template (e.g. 「物理·光学」). `title` is optional too: set it only when a page needs to target a specific search query — otherwise `buildDemoSEO` builds `{name} - {学科}{topic}互动演示 | {siteName}` for you.
 -  Add an icon mapping for the new `slug` in `src/lib/demoIcons.tsx`.
 -  Register the component in the `demoComponents` map in `App.tsx`.
--  In the demo component, call `useSEO(buildDemoSEO(SLUG))` once — do **not** hand-write title/description/keywords. `buildDemoSEO` in `src/lib/Meta.tsx` derives the title template, keywords, canonical, og/twitter tags and the page-level `BreadcrumbList` JSON-LD from `demos.json`.
+-  In the demo component, call `useSEO(buildDemoSEO(SLUG))` once — do **not** hand-write title/description/keywords. `buildDemoSEO` in `src/lib/Meta.tsx` derives the title template, keywords, canonical, og/twitter tags and the page-level JSON-LD (`BreadcrumbList` + `LearningResource`) from `demos.json`.
 -  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
 -  Update the corresponding entry in `ROADMAP.md` (tick the checkbox and add the slug).
 
