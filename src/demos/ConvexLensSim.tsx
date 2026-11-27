@@ -10,19 +10,15 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
 
-const name = '凸透镜成像模拟';
+const SLUG = 'convex-lens';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const ConvexLensSim: React.FC = () => {
-  useSEO({
-    title: `${name} - 光学物理演示 | Physics Learn`,
-    description: Demos.find(demo => demo.name === name)?.description || '',
-    keywords: '凸透镜成像,光学实验,实像形成,透镜折射,物理光学',
-    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-convex-lens.jpg`
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -245,7 +241,7 @@ const ConvexLensSim: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find(demo => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="光线传播路径" variant="slate">

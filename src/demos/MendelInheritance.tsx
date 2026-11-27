@@ -10,7 +10,7 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   CROSSES,
@@ -26,7 +26,9 @@ import {
   type CrossKind,
 } from '@/lib/bio/mendel';
 
-const name = '孟德尔遗传实验';
+const SLUG = 'mendel-inheritance';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -78,13 +80,7 @@ const labelStyle = {
 } as const;
 
 const MendelInheritance: React.FC = () => {
-  useSEO({
-    title: `${name} - 生物演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '孟德尔遗传,一对相对性状,基因的分离,棋盘法,显性与隐性,3:1分离比,初中生物',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-mendel-inheritance.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SceneEls | null>(null);
@@ -524,7 +520,7 @@ const MendelInheritance: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="基因的分离">

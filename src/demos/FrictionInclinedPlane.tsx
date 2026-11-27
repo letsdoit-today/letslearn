@@ -12,19 +12,15 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
 
-const name = '斜面摩擦实验';
+const SLUG = 'friction-inclined-plane';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const FrictionInclinedPlane: React.FC = () => {
-  useSEO({
-    title: `${name} - 力学物理演示 | Physics Learn`,
-    description: Demos.find(demo => demo.name === name)?.description || '',
-    keywords: '斜面摩擦,力学实验,受力分析,摩擦力,物理力学',
-    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-friction-inclined-plane.jpg`
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -321,7 +317,7 @@ const FrictionInclinedPlane: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find(demo => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="斜面受力分析">

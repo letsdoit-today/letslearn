@@ -9,7 +9,7 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
 import {
   A_MAX,
@@ -34,7 +34,9 @@ import {
   type QuadraticInput,
 } from '@/lib/math/quadratic';
 
-const name = '二次函数图像与参数';
+const SLUG = 'quadratic-function-graph';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -60,13 +62,7 @@ interface SceneEls {
 }
 
 const QuadraticFunctionGraph: React.FC = () => {
-  useSEO({
-    title: `${name} - 数学演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '二次函数,抛物线,顶点,对称轴,判别式,开口方向,函数图像,初中数学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-quadratic-function-graph.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SceneEls | null>(null);
@@ -344,7 +340,7 @@ const QuadraticFunctionGraph: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="a 决定开口方向与形状">

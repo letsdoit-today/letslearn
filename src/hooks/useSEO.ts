@@ -1,18 +1,19 @@
 import { useEffect } from 'react';
 
-interface SEOConfig {
+export interface SEOConfig {
   title: string;
   description: string;
   keywords?: string;
   canonical?: string;
   ogImage?: string;
+  jsonLd?: Record<string, unknown>;
 }
 
 export const useSEO = (config: SEOConfig) => {
   useEffect(() => {
     // 更新页面标题
     document.title = config.title;
-    
+
     // 更新meta描述
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -21,7 +22,7 @@ export const useSEO = (config: SEOConfig) => {
       document.head.appendChild(metaDescription);
     }
     metaDescription.setAttribute('content', config.description);
-    
+
     // 更新meta关键词
     if (config.keywords) {
       let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -32,7 +33,7 @@ export const useSEO = (config: SEOConfig) => {
       }
       metaKeywords.setAttribute('content', config.keywords);
     }
-    
+
     // 更新canonical链接
     if (config.canonical) {
       let canonicalLink = document.querySelector('link[rel="canonical"]');
@@ -43,7 +44,7 @@ export const useSEO = (config: SEOConfig) => {
       }
       canonicalLink.setAttribute('href', config.canonical);
     }
-    
+
     // 更新Open Graph标签
     const updateMetaTag = (property: string, content: string) => {
       let metaTag = document.querySelector(`meta[property="${property}"]`);
@@ -54,14 +55,18 @@ export const useSEO = (config: SEOConfig) => {
       }
       metaTag.setAttribute('content', content);
     };
-    
+
     updateMetaTag('og:title', config.title);
     updateMetaTag('og:description', config.description);
-    
+
+    if (config.canonical) {
+      updateMetaTag('og:url', config.canonical);
+    }
+
     if (config.ogImage) {
       updateMetaTag('og:image', config.ogImage);
     }
-    
+
     // 更新Twitter Card
     const updateTwitterTag = (name: string, content: string) => {
       let twitterTag = document.querySelector(`meta[name="twitter:${name}"]`);
@@ -72,9 +77,27 @@ export const useSEO = (config: SEOConfig) => {
       }
       twitterTag.setAttribute('content', content);
     };
-    
+
     updateTwitterTag('title', config.title);
     updateTwitterTag('description', config.description);
-    
+
+    if (config.ogImage) {
+      updateTwitterTag('image', config.ogImage);
+    }
+
+    // 更新页面级结构化数据（与 index.html 中的站点级 JSON-LD 并存）
+    let jsonLdScript = document.querySelector('script[data-seo-json-ld]');
+    if (config.jsonLd) {
+      if (!jsonLdScript) {
+        jsonLdScript = document.createElement('script');
+        jsonLdScript.setAttribute('type', 'application/ld+json');
+        jsonLdScript.setAttribute('data-seo-json-ld', 'true');
+        document.head.appendChild(jsonLdScript);
+      }
+      jsonLdScript.textContent = JSON.stringify(config.jsonLd);
+    } else if (jsonLdScript) {
+      jsonLdScript.remove();
+    }
+
   }, [config]);
 };

@@ -1,7 +1,7 @@
 {
-  "name": "Physics Learn - 物理学习平台",
+  "name": "Physics Learn - 理科演示平台",
   "short_name": "Physics Learn",
-  "description": "专业的物理学习平台，提供互动式物理实验与教学演示",
+  "description": "面向小学、初中、高中的理科互动演示平台，覆盖数学、物理、化学、生物四科。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

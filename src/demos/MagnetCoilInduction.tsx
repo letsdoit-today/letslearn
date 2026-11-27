@@ -11,7 +11,7 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   MAGNET_COIL_DEFAULT_PARAMS,
@@ -33,9 +33,9 @@ import {
 } from '@/lib/physics/magnetCoil';
 
 const SLUG = 'magnet-coil-induction';
-const meta = Demos.find((demo) => demo.slug === SLUG);
-const name = meta?.name ?? '磁铁插入/拔出线圈实验';
-const description = meta?.description ?? '';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
+const description = demo.description;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -170,13 +170,7 @@ interface GhostSnapshot {
 }
 
 const MagnetCoilInduction: React.FC = () => {
-  useSEO({
-    title: `${name} - 电磁学物理演示 | Physics Learn`,
-    description,
-    keywords: '电磁感应,磁铁插入线圈,磁铁拔出线圈,法拉第定律,楞次定律,磁通量变化,冲击电流计',
-    canonical: `${siteUrl}${meta?.path ?? ''}`,
-    ogImage: `${siteUrl}/og-magnet-coil-induction.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SnapContext | null>(null);

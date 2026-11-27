@@ -9,19 +9,15 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 
-const name = '空气-水折射实验';
+const SLUG = 'air-water-refraction';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const AirWaterRefraction: React.FC = () => {
-  useSEO({
-    title: `${name} - 光学物理演示 | Physics Learn`,
-    description: Demos.find(demo => demo.name === name)?.description || '',
-    keywords: '空气水折射,光学实验,斯涅尔定律,菲涅尔公式,物理光学',
-    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-air-water-refraction.jpg`
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -237,7 +233,7 @@ const AirWaterRefraction: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find(demo => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="折射率特性">

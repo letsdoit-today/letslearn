@@ -3,9 +3,10 @@
 To add a new demo to this project, follow these steps:
 
 -  Create a new demo file in the `src/demos/` directory.
--  Add the demo metadata (name / slug / path / description / keywords) to `src/lib/demos.json`. This file is the single source of truth: the router, the prerender script and the sitemap generator all derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes.
+-  Add the demo metadata (name / slug / category / path / description / keywords / topic) to `src/lib/demos.json`. This file is the single source of truth: the router, the prerender script and the sitemap generator all derive their routes from it, so `vite.config.ts` and `scripts/prerender.js` need no changes. `topic` is optional and only feeds the page title template (e.g. 「物理·光学」).
 -  Add an icon mapping for the new `slug` in `src/lib/demoIcons.tsx`.
 -  Register the component in the `demoComponents` map in `App.tsx`.
+-  In the demo component, call `useSEO(buildDemoSEO(SLUG))` once — do **not** hand-write title/description/keywords. `buildDemoSEO` in `src/lib/Meta.tsx` derives the title template, keywords, canonical, og/twitter tags and the page-level `BreadcrumbList` JSON-LD from `demos.json`.
 -  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
 -  Update the corresponding entry in `ROADMAP.md` (tick the checkbox and add the slug).
 

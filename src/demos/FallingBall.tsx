@@ -13,10 +13,12 @@ import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { DataPanel, type DataItem } from '@/components/demo/DataPanel';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 
-const name = '球体落入液体实验';
+const SLUG = 'falling-ball';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 interface SnapContext {
     ball: Circle;
@@ -27,13 +29,7 @@ interface SnapContext {
 }
 
 const FallingBall: React.FC = () => {
-    useSEO({
-        title: `${name} - 物理力学演示 | Physics Learn`,
-        description: Demos.find(demo => demo.name === name)?.description || '',
-        keywords: '球体落入液体,浮力实验,重力演示,物理力学,流体阻力',
-        canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
-        ogImage: `${siteUrl}/og-falling-ball.jpg`
-    });
+    useSEO(buildDemoSEO(SLUG));
 
     const svgRef = useRef<SVGSVGElement>(null);
     const [density, setDensity] = useState(1000);
@@ -168,7 +164,7 @@ const FallingBall: React.FC = () => {
     return (
         <DemoPage
             title={name}
-            description={Demos.find(demo => demo.name === name)?.description || ''}
+            description={demo.description}
             principles={
                 <>
                     <PrincipleCard title="牛顿第二定律">

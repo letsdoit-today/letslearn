@@ -12,7 +12,7 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
 import {
   PENDULUM_DEFAULT_PARAMS,
@@ -27,7 +27,9 @@ import {
   type PendulumParams,
 } from '@/lib/physics/pendulum';
 
-const name = '单摆/简谐振动实验';
+const SLUG = 'pendulum-oscillation';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -94,13 +96,7 @@ function headPoints(
 }
 
 const PendulumOscillation: React.FC = () => {
-  useSEO({
-    title: `${name} - 力学物理演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '单摆,简谐振动,等时性,周期公式,sinθ近似,物理力学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-pendulum-oscillation.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SnapContext | null>(null);
@@ -425,7 +421,7 @@ const PendulumOscillation: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="周期公式">

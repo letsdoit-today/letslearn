@@ -5,19 +5,15 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 
-const name = '人眼视觉调节原理模拟';
+const SLUG = 'eye-simulation';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const EyeSim: React.FC = () => {
-  useSEO({
-    title: `${name} - 光学物理演示 | Physics Learn`,
-    description: Demos.find(demo => demo.name === name)?.description || '',
-    keywords: '人眼视觉调节,晶状体调节,光学实验,物理光学,视觉成像',
-    canonical: `${siteUrl}${Demos.find(demo => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-eye-simulation.jpg`
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const [objectDistance, setObjectDistance] = useState(400); // 物体距离
 
@@ -64,7 +60,7 @@ const EyeSim: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find(demo => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="1. 物体位置" variant="slate">

@@ -10,7 +10,7 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   DEFAULT_INPUT,
@@ -25,7 +25,9 @@ import {
   type SoluteKind,
 } from '@/lib/chem/solubility';
 
-const name = '溶解度曲线与饱和溶液';
+const SLUG = 'solubility-curve';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -85,13 +87,7 @@ interface SceneEls {
 }
 
 const SolubilityCurve: React.FC = () => {
-  useSEO({
-    title: `${name} - 化学演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '溶解度曲线,饱和溶液,不饱和溶液,降温结晶,溶质质量分数,初中化学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-solubility-curve.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SceneEls | null>(null);
@@ -341,7 +337,7 @@ const SolubilityCurve: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="溶解度是什么">

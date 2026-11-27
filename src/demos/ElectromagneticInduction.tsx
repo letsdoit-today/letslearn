@@ -11,7 +11,7 @@ import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { DemoControls } from '@/components/demo/DemoControls';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   INDUCTION_DEFAULT_PARAMS,
@@ -26,7 +26,9 @@ import {
   type InductionParams,
 } from '@/lib/physics/induction';
 
-const name = '电磁感应实验';
+const SLUG = 'electromagnetic-induction';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -153,13 +155,7 @@ function locate(segments: Segment[], s: number): [number, number] {
 }
 
 const ElectromagneticInduction: React.FC = () => {
-  useSEO({
-    title: `${name} - 电磁学物理演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '电磁感应,导体棒切割磁感线,法拉第定律,楞次定律,安培力,物理电磁学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-electromagnetic-induction.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SnapContext | null>(null);
@@ -645,7 +641,7 @@ const ElectromagneticInduction: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       reference={
         <>
           总行程 x_total = {fmt(xTotal)} m · 时间常数 τ = {fmtTime(tau)} · {speedLabel} ={' '}

@@ -11,7 +11,7 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   computePlaneMirror,
@@ -23,7 +23,9 @@ import {
   type Point,
 } from '@/lib/physics/planeMirror';
 
-const name = '平面镜成像实验';
+const SLUG = 'plane-mirror-imaging';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -88,13 +90,7 @@ interface SceneEls {
 }
 
 const PlaneMirror: React.FC = () => {
-  useSEO({
-    title: `${name} - 光学物理演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '平面镜成像,光的反射,虚像,反射定律,镜面对称,物理光学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-plane-mirror-imaging.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SceneEls | null>(null);
@@ -483,7 +479,7 @@ const PlaneMirror: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="光的反射定律">

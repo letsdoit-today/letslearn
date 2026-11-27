@@ -11,7 +11,7 @@ import { DemoMain } from '@/components/demo/DemoMain';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette } from '@/lib/palette';
 import {
   LEVER_DEFAULT_PARAMS,
@@ -20,7 +20,9 @@ import {
   type LeverParams,
 } from '@/lib/physics/lever';
 
-const name = '杠杆力矩实验';
+const SLUG = 'lever-balance';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -106,13 +108,7 @@ function headPoints(
 }
 
 const LeverBalance: React.FC = () => {
-  useSEO({
-    title: `${name} - 力学物理演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '杠杆力矩,力臂,力矩平衡,杠杆原理,物理力学',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-lever-balance.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SnapContext | null>(null);
@@ -397,7 +393,7 @@ const LeverBalance: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="力矩与力臂">

@@ -11,7 +11,7 @@ import { DemoControls } from '@/components/demo/DemoControls';
 import { KpiBar, type KpiItem } from '@/components/demo/KpiBar';
 import { ParamSlider } from '@/components/demo/ParamSlider';
 import { PrincipleCard } from '@/components/demo/PrincipleCard';
-import Demos, { siteUrl } from '@/lib/Meta';
+import { buildDemoSEO, getDemoBySlug } from '@/lib/Meta';
 import { palette, rgba } from '@/lib/palette';
 import {
   BALANCE_EPS,
@@ -27,7 +27,9 @@ import {
   type RateFrame,
 } from '@/lib/bio/photosynthesis';
 
-const name = '光合作用与呼吸作用';
+const SLUG = 'photosynthesis-respiration';
+const demo = getDemoBySlug(SLUG);
+const name = demo.name;
 
 const WIDTH = 800;
 const HEIGHT = 500;
@@ -95,13 +97,7 @@ function curvePath(fromLight: number, toLight: number, sample: (light: number) =
 }
 
 const PhotosynthesisRespiration: React.FC = () => {
-  useSEO({
-    title: `${name} - 生物演示 | Physics Learn`,
-    description: Demos.find((demo) => demo.name === name)?.description || '',
-    keywords: '光合作用,呼吸作用,光补偿点,净光合速率,气体交换,叶绿体,线粒体,初中生物',
-    canonical: `${siteUrl}${Demos.find((demo) => demo.name === name)?.path || ''}`,
-    ogImage: `${siteUrl}/og-photosynthesis-respiration.jpg`,
-  });
+  useSEO(buildDemoSEO(SLUG));
 
   const svgRef = useRef<SVGSVGElement>(null);
   const snapRef = useRef<SceneEls | null>(null);
@@ -504,7 +500,7 @@ const PhotosynthesisRespiration: React.FC = () => {
   return (
     <DemoPage
       title={name}
-      description={Demos.find((demo) => demo.name === name)?.description || ''}
+      description={demo.description}
       principles={
         <>
           <PrincipleCard title="光合作用：场所与反应式">

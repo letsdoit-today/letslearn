@@ -258,9 +258,15 @@
 3. **小学「科学」的归属规则**（见 3.5）：按学科归组，还是单设分组。
 4. **壳层待改（均未开 change）**：
    - `src/components/Layout.tsx` 的 `menuGroups` 已扩充为「数学 / 物理 / 化学 / 生物」四组，**仍缺「地理」**。各分组按 `category` 过滤，因此新增条目只要 `category` 取对应学科值即可自动归类。
-   - `src/components/Dashboard.tsx` 的 SEO title/description 与首页大标题仍写死「物理学习平台 / 物理模拟实验」，需要改为覆盖五科的表述。
+   - `src/components/Dashboard.tsx` 的 SEO title/description 与首页大标题已改为覆盖四科的表述（「理科模拟实验」），并补充了 `ItemList` 结构化数据与各学科数量摘要。
    - `src/lib/demos.json` 的 `category` 原全为 `physics`；`add-solubility-curve` 已首次写入 `chemistry`，`add-mendel-inheritance` 与 `add-photosynthesis-respiration` 已写入 `biology`，`add-quadratic-function-graph` 已写入 `math`，地理开科时需同步约定其 `category` 取值。
-5. **README 与 ROADMAP 的分工已固化**：README 只写「如何新增 demo」，本文件写「做什么、优先级如何」，新增 demo 时只更新本文件。
+5. **SEO 元数据已收敛为单一事实源**（2026-11-27）：
+   - `src/lib/Meta.tsx` 新增 `siteName`、`categoryLabels`、`getDemoBySlug`、`buildDemoSEO`，由 `demos.json` 派生 title 模板、description、keywords、canonical、ogImage 与页面级 `BreadcrumbList` JSON-LD；15 个 demo 页面统一调用 `useSEO(buildDemoSEO(SLUG))`，不再各自硬编码。
+   - `src/lib/demos.json` 每条新增 `topic` 字段（力学 / 光学 / 电磁学 / 溶液 / 遗传 / 代谢 / 函数），用于拼装「学科 + 主题」的 title。
+   - `index.html` 站点级 title/description/keywords 已改为覆盖数学、物理、化学、生物四科，JSON-LD 改为 `WebSite` + `EducationalOrganization` 的 `@graph`。
+   - `public/manifest.json` 与 `public/404.html` 的站点名称同步更新为「理科演示平台」。
+   - 待办：`src/components/Layout.tsx` 的 `menuGroups` 仍缺「地理」分组，地理开科时补。
+6. **README 与 ROADMAP 的分工已固化**：README 只写「如何新增 demo」，本文件写「做什么、优先级如何」，新增 demo 时只更新本文件。
 
 ---
 
