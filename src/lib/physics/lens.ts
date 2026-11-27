@@ -9,7 +9,7 @@ export const IMAGE_TYPE_TEXT: Record<string, string> = {
   'image-type-inverted-reduced-real': '倒立 缩小 实像',
   'image-type-inverted-same-real': '倒立 等大 实像',
   'image-type-upright-enlarged-virtual': '正立 放大 虚像',
-  'image-type-upright-reduced-virtual': '正立、缩小、虚像',
+  'image-type-upright-reduced-virtual': '正立 缩小 虚像',
   'image-type-parallel': '平行',
 };
 

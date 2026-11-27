@@ -18,6 +18,33 @@ const SLUG = 'concave-lens';
 const demo = getDemoBySlug(SLUG);
 const name = demo.name;
 
+const EXAM_TIPS = [
+  {
+    title: '凹透镜对光有发散作用',
+    body: '平行光经过凹透镜后向外发散，反向延长线交于虚焦点。凸透镜会聚、凹透镜发散，是判断透镜类型最直接的依据。',
+  },
+  {
+    title: '焦点是虚焦点',
+    body: '凹透镜两侧的焦点都由折射光线的反向延长线相交得到，那里并没有真实的光线通过，因此不能像凸透镜那样用太阳光聚焦测焦距。',
+  },
+  {
+    title: '虚像不能用光屏承接',
+    body: '凹透镜对任何物距都只成正立、缩小的虚像，虚像与物同侧，只能透过透镜观察，把光屏放在任何位置都接不到像。',
+  },
+  {
+    title: '近视眼镜就是凹透镜',
+    body: '近视眼晶状体折光能力过强，像落在视网膜前。凹透镜先把光线发散，使像后移到视网膜上，所以近视镜片是凹透镜、度数为负。',
+  },
+  {
+    title: '判断透镜类型的三种方法',
+    body: '看形状（中间薄边缘厚为凹透镜）；看对光的作用（发散为凹透镜）；看成像（只能成缩小虚像为凹透镜）。',
+  },
+  {
+    title: '物近像近像变大',
+    body: '凹透镜与凸透镜的变化趋势不同：物体靠近透镜时，虚像也靠近透镜并变大；物体远离时，虚像向虚焦点靠拢并变小。无论哪种情况，虚像始终小于物体。',
+  },
+];
+
 const ConcaveLensSim: React.FC = () => {
   useSEO(buildDemoSEO(SLUG));
 
@@ -29,7 +56,7 @@ const ConcaveLensSim: React.FC = () => {
   const [data, setData] = useState({
     v: -75,
     m: 0.25,
-    typeText: "正立、缩小、虚像"
+    typeText: "正立 缩小 虚像"
   });
 
   // Constants
@@ -62,6 +89,9 @@ const ConcaveLensSim: React.FC = () => {
       virtualFocus: Path;
       virtualCenter: Path;
       center: Path;
+      thirdIncident: Path;
+      thirdRefracted: Path;
+      thirdVirtual: Path;
     };
   } | null>(null);
 
@@ -99,7 +129,7 @@ const ConcaveLensSim: React.FC = () => {
 
     // 3. Virtual Focus (Backwards to Focus)
     const imgTopY = objY - (objH * phys.m);
-    rays.virtualFocus.plot(`M${cx},${objTopY} L${imgX},${imgTopY}`);
+    rays.virtualFocus.plot(`M${cx},${objTopY} L${cx - CONFIG.f},${cy}`);
 
     // 4. Center Ray
     const slopeCenter = (cy - objTopY) / (cx - objX);
@@ -108,6 +138,13 @@ const ConcaveLensSim: React.FC = () => {
 
     // 5. Virtual Center (Backwards from Center)
     rays.virtualCenter.plot(`M${cx},${cy} L${imgX},${imgTopY}`);
+
+    // 6. Third Ray: aiming at F' on the image side, emerges parallel to the axis
+    const denom = cx + CONFIG.f - objX;
+    const yLens3 = denom > 0 ? objTopY + ((cy - objTopY) / denom) * (cx - objX) : objTopY;
+    rays.thirdIncident.plot(`M${objX},${objTopY} L${cx},${yLens3}`);
+    rays.thirdRefracted.plot(`M${cx},${yLens3} L${xEnd},${yLens3}`);
+    rays.thirdVirtual.plot(`M${cx},${yLens3} L${imgX},${yLens3}`);
 
   }, []);
 
@@ -228,18 +265,22 @@ const ConcaveLensSim: React.FC = () => {
     s.line(cx, cy - h / 2, cx, cy + h / 2)
       .stroke({ color: palette.reference, width: 1, dasharray: "2,2", opacity: 0.5 });
 
-    const points = [
-      { x: cx - CONFIG.f, label: "F" },
-      { x: cx - 2 * CONFIG.f, label: "2F" },
-      { x: cx + CONFIG.f, label: "F'" },
-      { x: cx + 2 * CONFIG.f, label: "2F'" },
-      { x: cx, label: "O", offset: 15 }
-    ];
-
-    points.forEach(p => {
-      s.circle(8).center(p.x, cy).fill(palette.canvasText);
-      s.text(p.label).move(p.x - 5, cy + (p.offset || 20)).fill(palette.canvasText).font({ size: "12px" });
+    [
+      { x: cx - CONFIG.f, label: "虚焦点 F" },
+      { x: cx + CONFIG.f, label: "虚焦点 F′" },
+    ].forEach(p => {
+      s.circle(8)
+        .center(p.x, cy)
+        .fill("none")
+        .stroke({ color: palette.canvasText, width: 1.5, dasharray: "2,2" });
+      s.text(p.label)
+        .move(p.x - 26, cy + 20)
+        .fill(palette.canvasText)
+        .font({ size: "12px" });
     });
+
+    s.circle(8).center(cx, cy).fill(palette.canvasText);
+    s.text("O").move(cx - 5, cy + 15).fill(palette.canvasText).font({ size: "12px" });
 
     s.text("主光轴").move(cx - CONFIG.axisLength / 2, cy).fill(palette.canvasText).font({ size: "12px" });
 
@@ -262,7 +303,10 @@ const ConcaveLensSim: React.FC = () => {
       refractedParallel: s.path("").stroke(rayAttr).fill("none"),
       virtualFocus: s.path("").stroke(dashedRayAttr).fill("none"),
       virtualCenter: s.path("").stroke(dashedRayAttr).fill("none"),
-      center: s.path("").stroke(rayAttr).fill("none")
+      center: s.path("").stroke(rayAttr).fill("none"),
+      thirdIncident: s.path("").stroke(rayAttr).fill("none"),
+      thirdRefracted: s.path("").stroke(rayAttr).fill("none"),
+      thirdVirtual: s.path("").stroke(dashedRayAttr).fill("none")
     };
 
     snapRef.current = { s, objectArrow, imageArrow, rays };
@@ -291,11 +335,18 @@ const ConcaveLensSim: React.FC = () => {
     updateScene(300);
   };
 
+  const imageHeight = Math.abs(data.m) * 60;
+
   const kpiItems: KpiItem[] = [
     { label: '物距 u', value: u.toFixed(0) },
-    { label: '像距 v', value: Math.round(data.v).toString() },
-    { label: '放大率 m', value: data.m.toFixed(2) },
-    { label: '成像性质', value: data.typeText },
+    { label: '像距 v', value: Math.round(Math.abs(data.v)).toString() },
+    {
+      label: '放大率 m',
+      value: data.m.toFixed(2),
+      hint: `像高 h′ ${Math.round(imageHeight).toString()}`,
+    },
+    { label: '成像性质', value: data.typeText.replace(/\s+/g, '') },
+    { label: '像的位置', value: '同侧', hint: '光屏不可承接' },
   ];
 
   return (
@@ -305,25 +356,46 @@ const ConcaveLensSim: React.FC = () => {
       principles={
         <>
           <PrincipleCard title="凹透镜成像规律">
-            凹透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为负值。凹透镜总是形成正立、缩小的虚像，虚像与物体位于透镜同侧。
+            凹透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中 f 取负值。凹透镜总是形成正立、缩小的虚像，且虚像与物体位于透镜同侧。
           </PrincipleCard>
-          <PrincipleCard title="光线传播路径">
-            平行于主光轴的光线经凹透镜折射后发散，其反向延长线通过虚焦点；通过光心的光线传播方向不变；两条折射光线的反向延长线交点即为虚像位置。
+          <PrincipleCard title="三条特殊光线">
+            平行于主光轴的光线折射后发散，反向延长线过物侧虚焦点；过光心的光线方向不变；射向像侧虚焦点的光线折射后平行于主光轴。三条光线的反向延长线交于虚像点。
           </PrincipleCard>
-          <PrincipleCard title="成像特性">
-            凹透镜成像具有发散特性，虚像大小随物距变化而改变。物距越大，虚像越小；物距越小，虚像越大，但始终为缩小虚像。
+          <PrincipleCard title="虚焦点与虚像">
+            凹透镜两侧的焦点都是虚焦点，是折射光线反向延长线的交点，并非光线真实会聚之处。虚像由反向延长线相交而成，因此无法用光屏承接，只能通过透镜观察。
           </PrincipleCard>
         </>
       }
       extra={
-        <div className="rounded-lg border bg-muted/40 p-3 text-sm flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-muted-foreground">相关演示：</span>
-          <Link className="text-primary underline-offset-4 hover:underline" to="/lens-imaging-rules/">
-            凸透镜成像规律对照表（含凹透镜对比）
-          </Link>
-          <Link className="text-primary underline-offset-4 hover:underline" to="/convex-lens/">
-            凸透镜成像规律动画演示（可拖动）
-          </Link>
+        <div className="space-y-4">
+          <div className="rounded-lg border bg-muted/40 p-3 text-sm flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="text-muted-foreground">相关演示：</span>
+            <Link className="text-primary underline-offset-4 hover:underline" to="/lens-imaging-rules/">
+              凸透镜成像规律对照表（五种物距一次看完）
+            </Link>
+            <Link className="text-primary underline-offset-4 hover:underline" to="/convex-lens/">
+              凸透镜光具座实验（可拖光屏找清晰像）
+            </Link>
+          </div>
+
+          <div className="rounded-lg border p-4 space-y-3">
+            <h2 className="text-lg font-semibold">凹透镜考点速查</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {EXAM_TIPS.map((tip) => (
+                <article key={tip.title} className="rounded-md border bg-card p-3">
+                  <h3 className="font-medium">{tip.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{tip.body}</p>
+                </article>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              凸透镜五种物距对应的像距与像的性质，见
+              <Link className="text-primary underline-offset-4 hover:underline" to="/lens-imaging-rules/">
+                成像规律对照表
+              </Link>
+              ；本页只讲凹透镜的成像与作图。
+            </p>
+          </div>
         </div>
       }
     >
