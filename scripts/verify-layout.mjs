@@ -93,11 +93,21 @@ async function measure(page) {
             };
           })
       : [];
+    const sidebarBox = box(sidebar);
+    const sidebarContentHeight =
+      sidebar && sidebarBox && sidebar.children.length > 0
+        ? Math.max(
+            0,
+            sidebar.children[sidebar.children.length - 1].getBoundingClientRect().bottom -
+              sidebarBox.top,
+          )
+        : null;
     const shellBox = box(shell);
     return {
       viewportHeight: window.innerHeight,
       canvas: box(canvas),
-      sidebar: box(sidebar),
+      sidebar: sidebarBox,
+      sidebarContentHeight,
       kpi: box(kpi),
       legend: box(legend),
       legendInsideCanvas: canvas && legend ? canvas.contains(legend) : null,
@@ -162,6 +172,11 @@ async function checkRoute(page, route, viewport, { foldedNav }) {
       )}）`,
     );
   }
+  if (m.sidebar && m.sidebarContentHeight !== null && m.sidebarContentHeight > vh + TOLERANCE) {
+    failures.push(
+      `${label}: 侧栏内容高度 ${Math.round(m.sidebarContentHeight)}px 超过视口 ${vh}px，控件需滚动超过一屏才能看全`,
+    );
+  }
   if (m.shellScrollWidth !== null && m.shellScrollWidth > m.shellClientWidth) {
     failures.push(
       `${label}: 内容区横向溢出 scrollWidth=${m.shellScrollWidth} clientWidth=${m.shellClientWidth}`,
@@ -208,7 +223,9 @@ async function checkRoute(page, route, viewport, { foldedNav }) {
   console.log(
     `   ${label}: 画布 ${m.canvas ? `${Math.round(m.canvas.width)}x${Math.round(m.canvas.height)}` : '-'}px, 侧栏 ${
       m.sidebar ? Math.round(m.sidebar.height) : '-'
-    }px, KPI ${m.kpi ? Math.round(m.kpi.height) : '-'}px, 图注 ${
+    }px（内容 ${
+      m.sidebarContentHeight === null ? '-' : Math.round(m.sidebarContentHeight)
+    }px）, KPI ${m.kpi ? Math.round(m.kpi.height) : '-'}px, 图注 ${
       m.legend ? Math.round(m.legend.height) : '-'
     }px, 浮层 ${m.overlays.length} 个, band ${band === null ? '-' : Math.round(band)}px, 偏移 ${
       m.workspaceTop === null ? '-' : Math.round(m.workspaceTop)
@@ -242,15 +259,31 @@ async function main() {
     });
     const page = await browser.newPage();
 
+    const runCheck = async (route, viewport, foldedNav) => {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          return await checkRoute(page, route, viewport, { foldedNav });
+        } catch (error) {
+          if (attempt === 3) throw error;
+          console.warn(
+            `   ⚠️ ${route} @ ${viewport.name} 第 ${attempt} 次校验中断（${error.message}），重试中...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          await page.goto('about:blank').catch(() => {});
+        }
+      }
+      return [];
+    };
+
     for (const viewport of VIEWPORTS) {
       for (const route of routes) {
-        failures.push(...(await checkRoute(page, route, viewport, { foldedNav: false })));
+        failures.push(...(await runCheck(route, viewport, false)));
       }
     }
 
     for (const viewport of VIEWPORTS) {
       for (const route of routes) {
-        failures.push(...(await checkRoute(page, route, viewport, { foldedNav: true })));
+        failures.push(...(await runCheck(route, viewport, true)));
       }
     }
 

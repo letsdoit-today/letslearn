@@ -9,6 +9,8 @@ To add a new demo to this project, follow these steps:
 -  In the demo component, call `useSEO(buildDemoSEO(SLUG))` once — do **not** hand-write title/description/keywords. `buildDemoSEO` in `src/lib/Meta.tsx` derives the title template, keywords, canonical, og/twitter tags and the page-level JSON-LD (`BreadcrumbList` + `LearningResource`) from `demos.json`.
 -  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
 -  `DemoPage` accepts an optional `extra` prop for content rendered below the demo workspace (comparison tables, related-demo links). Keep it outside the workspace row so the layout verifier still measures canvas / KPI / sidebar only.
+-  Canvas overlays are plain SVG groups drawn inside the scene (e.g. the movable screen in `ConvexLensSim`): bind pointer events on the root `<svg>` in a `useEffect`, map client coordinates back through `getScreenCTM().inverse()`, and hit-test in viewBox units so the overlay stays aligned at every viewport. Draw overlays *below* the arrows they must not cover, and call `svg.setPointerCapture` so dragging continues outside the element.
+-  When a demo adds sidebar controls, keep the total sidebar content height under one viewport: `npm run verify:layout` measures the real content height (last sidebar child's bottom minus sidebar top) and fails if it exceeds the viewport.
 -  Run `npm run og:image` after `vite build` to regenerate the social share images (`public/og-{slug}.jpg`, 1200x630) for the routes listed in `scripts/gen-og-image.js`.
 -  Update the corresponding entry in `ROADMAP.md` (tick the checkbox and add the slug).
 
