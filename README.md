@@ -8,6 +8,8 @@ To add a new demo to this project, follow these steps:
 -  Register the component in the `demoComponents` map in `App.tsx`.
 -  In the demo component, call `useSEO(buildDemoSEO(SLUG))` once — do **not** hand-write title/description/keywords. `buildDemoSEO` in `src/lib/Meta.tsx` derives the title template, keywords, canonical, og/twitter tags and the page-level JSON-LD (`BreadcrumbList` + `LearningResource`) from `demos.json`.
 -  Run `npm run sitemap` to regenerate `public/sitemap.xml` from `demos.json` (`npm run sitemap:check` verifies it is in sync).
+-  `DemoPage` accepts an optional `extra` prop for content rendered below the demo workspace (comparison tables, related-demo links). Keep it outside the workspace row so the layout verifier still measures canvas / KPI / sidebar only.
+-  Run `npm run og:image` after `vite build` to regenerate the social share images (`public/og-{slug}.jpg`, 1200x630) for the routes listed in `scripts/gen-og-image.js`.
 -  Update the corresponding entry in `ROADMAP.md` (tick the checkbox and add the slug).
 
 

@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { Svg, G, Path } from '@svgdotjs/svg.js';
 import { Matrix } from '@svgdotjs/svg.js';
 import { useSEO } from '@/hooks/useSEO';
@@ -313,6 +314,17 @@ const ConcaveLensSim: React.FC = () => {
             凹透镜成像具有发散特性，虚像大小随物距变化而改变。物距越大，虚像越小；物距越小，虚像越大，但始终为缩小虚像。
           </PrincipleCard>
         </>
+      }
+      extra={
+        <div className="rounded-lg border bg-muted/40 p-3 text-sm flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-muted-foreground">相关演示：</span>
+          <Link className="text-primary underline-offset-4 hover:underline" to="/lens-imaging-rules/">
+            凸透镜成像规律对照表（含凹透镜对比）
+          </Link>
+          <Link className="text-primary underline-offset-4 hover:underline" to="/convex-lens/">
+            凸透镜成像规律动画演示（可拖动）
+          </Link>
+        </div>
       }
     >
       <DemoMain>

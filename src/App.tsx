@@ -7,6 +7,7 @@ import FrictionInclinedPlane from './demos/FrictionInclinedPlane';
 import AirWaterRefraction from './demos/AirWaterRefraction';
 import ConvexLensSim from './demos/ConvexLensSim';
 import ConcaveLensSim from './demos/ConcaveLensSim';
+import LensImagingRules from './demos/LensImagingRules';
 import EyeSim from './demos/EyeSim';
 import LeverBalance from './demos/LeverBalance';
 import PendulumOscillation from './demos/PendulumOscillation';
@@ -25,6 +26,7 @@ const demoComponents: Record<string, ComponentType> = {
   'air-water-refraction': AirWaterRefraction,
   'convex-lens': ConvexLensSim,
   'concave-lens': ConcaveLensSim,
+  'lens-imaging-rules': LensImagingRules,
   'eye-simulation': EyeSim,
   'lever-balance': LeverBalance,
   'pendulum-oscillation': PendulumOscillation,

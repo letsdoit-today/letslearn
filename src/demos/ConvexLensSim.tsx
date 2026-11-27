@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { Svg, G, Path } from '@svgdotjs/svg.js';
 import { Matrix } from '@svgdotjs/svg.js';
 import { useSEO } from '@/hooks/useSEO';
@@ -321,6 +322,17 @@ const ConvexLensSim: React.FC = () => {
             凸透镜成像遵循薄透镜公式：1/f = 1/u + 1/v，其中f为焦距，u为物距，v为像距。
           </PrincipleCard>
         </>
+      }
+      extra={
+        <div className="rounded-lg border bg-muted/40 p-3 text-sm flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-muted-foreground">相关演示：</span>
+          <Link className="text-primary underline-offset-4 hover:underline" to="/lens-imaging-rules/">
+            凸透镜成像规律对照表（五种物距一次看完）
+          </Link>
+          <Link className="text-primary underline-offset-4 hover:underline" to="/concave-lens/">
+            凹透镜成像规律动画演示（可拖动）
+          </Link>
+        </div>
       }
     >
       <DemoMain>

@@ -35,12 +35,14 @@ export function DemoPage({
   description,
   principles,
   reference,
+  extra,
   children,
 }: {
   title: string;
   description: string;
   principles?: ReactNode;
   reference?: ReactNode;
+  extra?: ReactNode;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -61,7 +63,8 @@ export function DemoPage({
           {reference ? (
             <div className="text-xs text-muted-foreground">{reference}</div>
           ) : null}
-          <div className="flex flex-col xl:flex-row gap-6">{children}</div>
+          <div data-demo-row className="flex flex-col xl:flex-row gap-6">{children}</div>
+          {extra ? <div>{extra}</div> : null}
         </CardContent>
       </Card>
     </div>
