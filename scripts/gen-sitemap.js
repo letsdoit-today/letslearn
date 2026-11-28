@@ -37,9 +37,10 @@ function readDemos() {
   return demos;
 }
 
-function lastMod() {
+// 取指定路径集合中最近一次提交时间；任一路径无提交记录时 git 会报错，此时返回 null 并省略 lastmod
+function gitLastCommit(paths) {
   try {
-    const iso = execFileSync('git', ['log', '-1', '--format=%cI', '--', 'src/lib/demos.json'], {
+    const iso = execFileSync('git', ['log', '-1', '--format=%cI', '--', ...paths], {
       cwd: rootDir,
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
@@ -50,17 +51,39 @@ function lastMod() {
   }
 }
 
-function buildSitemap(demos, lastmod) {
-  const routes = [{ loc: `${SITE_URL}/` }];
+// 从 src/demos/*.tsx 的 `const SLUG = '...'` 反查每个 slug 对应的组件文件，
+// 使 lastmod 能跟随页面自身改动，而不是所有页面共用 demos.json 的提交时间
+function resolveDemoSources() {
+  const demosDir = path.join(rootDir, 'src', 'demos');
+  if (!fs.existsSync(demosDir)) return new Map();
+  const sources = new Map();
+  for (const file of fs.readdirSync(demosDir).filter((name) => name.endsWith('.tsx'))) {
+    const content = fs.readFileSync(path.join(demosDir, file), 'utf-8');
+    const matched = content.match(/const SLUG = '([^']+)'/);
+    if (matched) sources.set(matched[1], path.join('src', 'demos', file));
+  }
+  return sources;
+}
+
+function buildSitemap(demos, sources) {
+  // 首页会渲染整份 demo 列表，因此 demos.json 的改动对首页是真实的内容变化
+  const homePaths = ['src/lib/demos.json', 'index.html', 'src/App.tsx', 'src/components/Dashboard.tsx'];
+  const routes = [{ loc: `${SITE_URL}/`, lastmod: gitLastCommit(homePaths) }];
   for (const demo of demos) {
     const normalized = demo.path.replace(/^\/+|\/+$/g, '');
-    routes.push({ loc: `${SITE_URL}/${normalized}/` });
+    const source = sources.get(demo.slug);
+    // 只取该页自己的组件文件：若把 demos.json 也算进来，任何新增 demo 都会把
+    // 全部页面的 lastmod 一起刷新，Google 会判定 lastmod 不可靠而直接忽略它
+    routes.push({
+      loc: `${SITE_URL}/${normalized}/`,
+      lastmod: gitLastCommit(source ? [source] : ['src/lib/demos.json']),
+    });
   }
 
   const body = routes
     .map((route) => {
       const lines = [`        <loc>${route.loc}</loc>`];
-      if (lastmod) lines.push(`        <lastmod>${lastmod}</lastmod>`);
+      if (route.lastmod) lines.push(`        <lastmod>${route.lastmod}</lastmod>`);
       lines.push(`        <changefreq>${CHANGEFREQ}</changefreq>`);
       lines.push(`        <priority>${PRIORITY}</priority>`);
       return `    <url>\n${lines.join('\n')}\n    </url>`;
@@ -84,8 +107,8 @@ function extractLocs(xml) {
 
 function main() {
   const demos = readDemos();
-  const lastmod = lastMod();
-  const content = buildSitemap(demos, lastmod);
+  const sources = resolveDemoSources();
+  const content = buildSitemap(demos, sources);
   const total = demos.length + 1;
 
   if (isCheck) {
@@ -110,8 +133,9 @@ function main() {
   }
 
   fs.writeFileSync(sitemapPath, content);
+  const withLastmod = [...content.matchAll(/<lastmod>/g)].length;
   console.log(
-    `✓ 已生成 ${path.relative(rootDir, sitemapPath)}（${total} 条 URL${lastmod ? `，lastmod ${lastmod}` : '，未获取到 lastmod 已省略'}）`,
+    `✓ 已生成 ${path.relative(rootDir, sitemapPath)}（${total} 条 URL，${withLastmod} 条带按页计算的 lastmod）`,
   );
 }
 

@@ -30,11 +30,11 @@ const Dashboard: React.FC = () => {
   );
 
   useSEO({
-    title: `理科模拟实验 - 互动式理科学习平台 | ${siteName}`,
+    title: `${siteName} - 数学·物理·化学·生物互动演示`,
     description:
       '面向小学、初中、高中的理科互动演示平台，覆盖数学、物理、化学、生物四科。二次函数图像与参数、斜面摩擦与受力分析、光的折射、凸透镜成像规律、凹透镜成像规律、杠杆力矩、单摆简谐振动、电磁感应、溶解度曲线、孟德尔遗传、光合作用与呼吸作用等演示均支持参数调节与实时数据联动，帮助直观理解抽象概念。',
     keywords: `理科学习,数学演示,物理实验,化学演示,生物演示,凸透镜成像规律,凹透镜成像规律,互动教学,初中理科,${demoKeywords.join(',')}`,
-    canonical: siteUrl,
+    canonical: `${siteUrl}/`,
     ogImage: `${siteUrl}/og-dashboard.jpg`,
     jsonLd: itemList,
   });
@@ -55,9 +55,9 @@ const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-5xl px-3 sm:px-8">
+    <div className="container mx-auto max-w-5xl px-3 sm:px-8" data-page-container>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">理科模拟实验</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">理科演示平台</h1>
         <p className="text-muted-foreground">
           探索交互式数学、物理、化学与生物演示。
         </p>

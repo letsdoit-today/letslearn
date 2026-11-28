@@ -260,7 +260,7 @@
 3. **小学「科学」的归属规则**（见 3.5）：按学科归组，还是单设分组。
 4. **壳层待改（均未开 change）**：
    - `src/components/Layout.tsx` 的 `menuGroups` 已扩充为「数学 / 物理 / 化学 / 生物」四组，**仍缺「地理」**。各分组按 `category` 过滤，因此新增条目只要 `category` 取对应学科值即可自动归类。
-   - `src/components/Dashboard.tsx` 的 SEO title/description 与首页大标题已改为覆盖四科的表述（「理科模拟实验」），并补充了 `ItemList` 结构化数据与各学科数量摘要。
+   - `src/components/Dashboard.tsx` 的 SEO title/description 与首页大标题已改为覆盖四科的表述（「理科演示平台」），并补充了 `ItemList` 结构化数据与各学科数量摘要。
    - `src/lib/demos.json` 的 `category` 原全为 `physics`；`add-solubility-curve` 已首次写入 `chemistry`，`add-mendel-inheritance` 与 `add-photosynthesis-respiration` 已写入 `biology`，`add-quadratic-function-graph` 已写入 `math`，地理开科时需同步约定其 `category` 取值。
 5. **SEO 元数据已收敛为单一事实源**（2026-11-27）：
    - `src/lib/Meta.tsx` 新增 `siteName`、`categoryLabels`、`getDemoBySlug`、`buildDemoSEO`，由 `demos.json` 派生 title 模板、description、keywords、canonical、ogImage 与页面级 `BreadcrumbList` JSON-LD；15 个 demo 页面统一调用 `useSEO(buildDemoSEO(SLUG))`，不再各自硬编码。
@@ -269,6 +269,14 @@
    - `public/manifest.json` 与 `public/404.html` 的站点名称同步更新为「理科演示平台」。
    - 待办：`src/components/Layout.tsx` 的 `menuGroups` 仍缺「地理」分组，地理开科时补。
 6. **README 与 ROADMAP 的分工已固化**：README 只写「如何新增 demo」，本文件写「做什么、优先级如何」，新增 demo 时只更新本文件。
+7. **SEO 硬约束（不可省略，针对 Google Search Console 的两类问题：已抓取未编入索引 / 规范网址配置错误）**。以下六条对所有页面（含首页与新增 demo）永久生效，任何新增或改动页面都必须同时满足：
+   - **分享图必须存在**：每个路由都要有 `public/og-{slug}.jpg`（1200×630）。`scripts/gen-og-image.js` 的 routes 由 `demos.json` 自动派生并内置首页（slug `dashboard`），**不要手写路由列表**；生成后脚本会自检缺图并报错。禁止再引用 `og-image.jpg` / `twitter-image.jpg` 这类不存在的旧文件名。
+   - **canonical 必须自引用**：页面 canonical 必须与 sitemap 里该页的 URL 完全一致（含结尾斜杠）。首页统一为 `${siteUrl}/`，demo 页统一为 `${siteUrl}/{slug}/`，不得出现无斜杠、测试域名或带追踪参数的写法。
+   - **品牌名唯一且不限于物理**：全站（页面 title、`index.html`、`manifest.json`、`404.html`、JSON-LD、`robots.txt` 注释）统一用「理科演示平台」。`src/lib/Meta.tsx` 的 `siteName` 是唯一事实源，`buildDemoSEO` 会自动为每个 demo 标题追加 ` | 理科演示平台`，因此 **`demos.json` 的 `title` 里不要再写品牌名**。站点覆盖数学 / 物理 / 化学 / 生物四科，不得再出现 `Physics Learn` 这类把范围说窄的英文品牌（仓库名用 `letslearn`）。
+   - **robots.txt 只保留必要内容**：`User-agent: * / Allow: /` + `Sitemap` 声明。**不要加 `Crawl-delay`**（Bing / Yandex 会真的降速），**不要 `Disallow` 不存在或需要被索引的路径**。
+   - **sitemap lastmod 按页计算**：`scripts/gen-sitemap.js` 取每个 demo 自己 `src/demos/<File>.tsx` 的最近提交时间；首页取 `demos.json` + `index.html` + `App.tsx` + `Dashboard.tsx`。**不要把 `demos.json` 混进 demo 页的路径集合**——否则新增任意 demo 会刷新全部页面 lastmod，Google 会判定 lastmod 不可靠而整体忽略。
+   - **结构化数据引用的资源必须真实存在**：`index.html` 中 `EducationalOrganization.logo` 指向 `icon-512.png`（`public/` 内已有）。新增 JSON-LD 时不要引用未产出的文件名。
+   - 校验方式：`npm run sitemap:check` + `npm run og:image` + 构建后抽查 `dist/` 下各页 `canonical` 与 `og:image` 是否一一对应且返回 200。
 
 ---
 
@@ -280,5 +288,7 @@
 - [ ] 在 `src/lib/demos.json` 追加元数据（slug / name / category / path / description / keywords），`category` 需取对应学科
 - [ ] 在 `src/lib/demoIcons.tsx` 增加 slug 的图标映射
 - [ ] 在 `src/App.tsx` 的 `demoComponents` 注册组件
-- [ ] 运行 `npm run sitemap` 重新生成站点地图
+- [ ] 运行 `npm run sitemap` 重新生成站点地图（`npm run sitemap:check` 校验同步）
+- [ ] 运行 `npm run og:image` 生成该页分享图（`og:image` 会自动覆盖新 slug，缺图会报错）
+- [ ] 核对 SEO 硬约束（第 5 节第 7 条）：canonical 带尾斜杠、`og:image` 可访问、品牌名统一、robots.txt 无新增禁用项
 - [ ] 回到本文件勾选对应条目，补上 slug，并更新第 1 节的学科 × 学段计数

@@ -16,7 +16,7 @@ export type Demo = {
 }
 
 export const siteUrl = 'https://learn.letsdoit.today';
-export const siteName = 'Physics Learn';
+export const siteName = '理科演示平台';
 
 export const categoryLabels: Record<string, string> = {
   math: '数学',
@@ -51,8 +51,15 @@ function buildDemoSEOUncached(slug: string) {
   const subject = categoryLabels[demo.category] ?? '理科';
   const topic = demo.topic ?? '';
 
+  const brandSuffix = ` | ${siteName}`;
+  const pageTitle = demo.title
+    ? demo.title.includes(siteName)
+      ? demo.title
+      : `${demo.title}${brandSuffix}`
+    : `${demo.name} - ${subject}${topic}互动演示${brandSuffix}`;
+
   return {
-    title: demo.title ?? `${demo.name} - ${subject}${topic}互动演示 | ${siteName}`,
+    title: pageTitle,
     description: demo.description,
     keywords: [...demo.keywords, `${subject}学习`, `${subject}互动演示`].join(','),
     canonical: `${siteUrl}${demo.path}`,
