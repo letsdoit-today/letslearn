@@ -62,7 +62,7 @@
 | 状态 | 条目 | 学段 | slug |
 | --- | --- | --- | --- |
 | [x] | 球体落液（浮力/流体阻力） | 初中 | `falling-ball` |
-| [x] | 斜面摩擦（受力分析） | 初中 / 高中 | `friction-inclined-plane` |
+| [x] | 斜面摩擦（临界角/受力分解/上滑反向） | 初中 / 高中 | `friction-inclined-plane` |
 | [x] | 杠杆力矩 | 初中 | `lever-balance` |
 | [x] | 单摆/简谐振动 | 高中 | `pendulum-oscillation` |
 | [ ] | 抛体运动 | 高中 | — |
